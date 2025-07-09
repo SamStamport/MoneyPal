@@ -1,0 +1,40 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.gitignore": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/*.pyo": true,
+        "**/*.pyd": true,
+        "**/venv": true,
+        "**/ENV": true,
+        "**/env": true,
+        "**/env.bak": true,
+        "**/venv.bak": true,
+        "**/.pytest_cache": true,
+        "**/.mypy_cache": true,
+        "**/*.egg-info": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/.gitignore": true,
+        "**/.gitattributes": true,
+        "**/.gitmodules": true,
+        "**/cascade.yaml": true,
+        "**/*.yaml": true,
+        "**/*.yml": true,
+        "**/requirements.txt": true,
+        "**/setup.py": true,
+        "**/setup.cfg": true
+    },
+    "explorer.excludeGitIgnore": true,
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/node_modules/**": true,
+        "**/.hg/**": true,
+        "**/.svn/**": true
+    }
+}

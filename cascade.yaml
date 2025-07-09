@@ -1,0 +1,40 @@
+version: 1
+
+# Project configuration
+project:
+  name: MoneyPal
+  description: A Progressive Web App for personal finance management
+  type: web
+  language: python
+  workspace: C:\Users\samst\CascadeProjects\MoneyPal
+
+# Development settings
+development:
+  port: 5000
+  environment: development
+  debug: true
+
+# Database configuration
+database:
+  type: sqlite
+  name: moneypal.db
+  path: /Users/samst/CascadeProjects/MoneyPal/data/
+
+# Directory structure
+directories:
+  - name: routes
+    description: Flask route handlers
+    path: /Users/samst/CascadeProjects/MoneyPal/routes/
+  - name: models
+    description: Database models
+    path: /Users/samst/CascadeProjects/MoneyPal/models/
+  - name: static
+    description: Static assets (CSS, JS, images)
+    path: /Users/samst/CascadeProjects/MoneyPal/static/
+  - name: templates
+    description: HTML templates
+    path: /Users/samst/CascadeProjects/MoneyPal/templates/
+  - name: data
+    description: Data storage
+  - name: markdown
+    description: Project documentation
