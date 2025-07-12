@@ -18,6 +18,9 @@ var/
 wheels/
 *.egg-info/
 .installed.cfg
+
+# Instance directory (contains database files)
+instance/
 *.egg
 
 # Virtual Environment

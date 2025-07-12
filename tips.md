@@ -75,12 +75,14 @@ The conversion works reasonably well for basic markdown, but expect to do some m
 * [ ] Windsurf automatically saves changes to files.
 
 ## Useful Extensions
+
 - [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) - For testing API endpoints
 - [Python Test Explorer](https://marketplace.visualstudio.com/items?itemName=LittleFoxTeam.vscode-python-test-adapter) - For running tests
 - [SQLTools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) - For database management
 - [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) - For code formatting
 
 ## Deployment Tips
+
 - Set `FLASK_ENV=production` in production
 - Use a production WSGI server like Gunicorn or uWSGI
 - Configure proper logging
@@ -88,4 +90,9 @@ The conversion works reasonably well for basic markdown, but expect to do some m
 - Regular database backups
 
 ---
+
+To see actual database use https://sqlitebrowser.org/dl/
+
+Open the database file located at
+c:\Users\samst\CascadeProjects\MoneyPal\instance\moneypal.db
 *Last updated: 2025-07-08*
