@@ -1,4 +1,4 @@
-from app import db
+from database import db
 from models.transaction import Transaction
 
 class Category(db.Model):

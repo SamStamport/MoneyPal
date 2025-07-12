@@ -5,8 +5,12 @@ from werkzeug.security import check_password_hash
 
 auth_bp = Blueprint('auth', __name__)
 
-@auth_bp.route('/login', methods=['POST'])
+@auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+    
+    data = request.get_json()
     data = request.get_json()
     user = User.query.filter_by(email=data['email']).first()
     

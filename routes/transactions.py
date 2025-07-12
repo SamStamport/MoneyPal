@@ -7,9 +7,15 @@ transactions_bp = Blueprint('transactions', __name__)
 
 @transactions_bp.route('/transactions', methods=['GET'])
 @login_required
-def get_transactions():
+def list():
+    """List all transactions"""
     transactions = Transaction.query.all()
     return jsonify([transaction.to_dict() for transaction in transactions])
+
+@transactions_bp.route('/transactions', methods=['GET'])
+@login_required
+def get_transactions():
+    return list()
 
 @transactions_bp.route('/transactions', methods=['POST'])
 @login_required

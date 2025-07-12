@@ -1,8 +1,12 @@
 :root {
-    --primary-color: #2196f3;
-    --secondary-color: #1976d2;
-    --background-color: #ffffff;
+    --primary-color: #4B5945;
+    --primary-dark: #3B473D;
+    --secondary-color: #66785F;
+    --secondary-light: #768A6F;
+    --background-color: #B2C9AD;
+    --background-light: #C2D9B9;
     --text-color: #333333;
+    --text-light: #555555;
     --border-radius: 8px;
     --spacing-unit: 1rem;
 }
@@ -21,7 +25,7 @@ body {
 }
 
 nav {
-    background-color: var(--primary-color);
+    background-color: var(--primary-dark);
     padding: var(--spacing-unit);
     display: flex;
     justify-content: space-between;
@@ -72,7 +76,7 @@ main {
 }
 
 .stat-card {
-    background: white;
+    background: var(--background-light);
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -97,15 +101,16 @@ main {
     color: white;
     padding: 1rem;
     text-align: left;
+    border-bottom: 2px solid var(--secondary-dark);
 }
 
 .recent-transactions td {
-    padding: 1rem;
-    border-bottom: 1px solid #eee;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--secondary-light);
 }
 
 .add-transaction {
-    background: white;
+    background: var(--background-light);
     padding: 2rem;
     border-radius: var(--border-radius);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
