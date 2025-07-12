@@ -17,7 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add event listeners
     document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', handleFormSubmit);
+        // Skip authentication forms (login and register) for special handling
+        if (!form.closest('.login-container') && !form.closest('.register-container')) {
+            form.addEventListener('submit', handleFormSubmit);
+        }
     });
 });
 

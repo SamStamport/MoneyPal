@@ -2,6 +2,9 @@
 
 This file tracks the current tasks and to-do items for the MoneyPal project.
 
+# High Priority
+
+getting cascade errors when testing new color scheme
 
 ## Medium Priority
 
