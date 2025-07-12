@@ -28,12 +28,35 @@ venv/
 ENV/
 
 # IDE
+# Hide non-routinely used files in IDE explorer
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
 .idea/
 *.swp
 *.swo
+
+# Hide preview files and configuration
+*preview.html
+*preview.md
+
+# Hide temporary and cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Hide documentation files
+*.md
+!README.md
+!CHANGELOG.md
+!SECURITY.md
+!CODE_OF_CONDUCT.md
+!CONTRIBUTING.md
+
+# Hide configuration files
+cascade.yaml
 
 # Database
 *.db

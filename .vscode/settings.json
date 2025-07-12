@@ -20,7 +20,6 @@
         "**/*.egg-info": true,
         "**/dist": true,
         "**/build": true,
-        "**/.gitignore": true,
         "**/.gitattributes": true,
         "**/.gitmodules": true,
         "**/cascade.yaml": true,
@@ -30,7 +29,6 @@
         "**/setup.py": true,
         "**/setup.cfg": true
     },
-    "explorer.excludeGitIgnore": true,
     "files.watcherExclude": {
         "**/.git/objects/**": true,
         "**/node_modules/**": true,
