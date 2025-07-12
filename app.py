@@ -37,12 +37,13 @@ def index():
     return render_template('dashboard.html')
 
 # Import routes after app is initialized
-from routes import auth_bp, transactions_bp, dashboard_bp
+from routes import auth_bp, transactions_bp, dashboard_bp, categories_bp
 
 # Register blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(transactions_bp)
 app.register_blueprint(dashboard_bp)
+app.register_blueprint(categories_bp, url_prefix='/categories')
 
 if __name__ == '__main__':
     with app.app_context():

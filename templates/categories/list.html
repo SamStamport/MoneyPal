@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}MoneyPal - Categories{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Categories</h2>
+    
+    <div class="actions">
+        <a href="{{ url_for('categories.new_category') }}" class="btn">Add New Category</a>
+    </div>
+    
+    <div class="categories-list">
+        {% for category in categories %}
+        <div class="category-card">
+            <h3>{{ category.name }}</h3>
+            <p>{{ category.description }}</p>
+            <p class="created-at">Created: {{ category.created_at.strftime('%Y-%m-%d') }}</p>
+            <div class="category-actions">
+                <a href="{{ url_for('categories.category', category_id=category.id) }}" class="btn btn-edit">Edit</a>
+                <form action="{{ url_for('categories.category', category_id=category.id) }}" method="POST" class="delete-form">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-delete">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <p>No categories have been created yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 1rem;
+    }
+    
+    .actions {
+        margin-bottom: 2rem;
+    }
+    
+    .categories-list {
+        display: grid;
+        gap: 1rem;
+    }
+    
+    .category-card {
+        background: var(--secondary-color);
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .category-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .btn-edit {
+        background: var(--accent-color);
+        color: white;
+    }
+    
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+    }
+</style>
+{% endblock %}
