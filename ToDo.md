@@ -4,7 +4,13 @@ This file tracks the current tasks and to-do items for the MoneyPal project.
 
 # High Priority
 
-getting cascade errors when testing new color scheme
+windsurf: how to make it start with this file open
+
+URLs for testing
+
+http://127.0.0.1:5000/login
+
+http://127.0.0.1:5000/
 
 ## Medium Priority
 

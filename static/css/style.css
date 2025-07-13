@@ -1,12 +1,13 @@
 :root {
-    --primary-color: #4B5945;
-    --primary-dark: #3B473D;
-    --secondary-color: #66785F;
-    --secondary-light: #768A6F;
-    --background-color: #B2C9AD;
-    --background-light: #C2D9B9;
-    --text-color: #333333;
-    --text-light: #555555;
+    --primary-color: #e6e0d0;
+    --primary-dark: #cfc5a2;
+    --secondary-color: #f3efe4;
+    --secondary-light: #f9f7f2;
+    --background-color: #cfc3a2;
+    --background-light: #dfd6bc;
+    --text-color: #000000;
+    --text-light: #222222;
+    --input-text-color: #5a4f37;
     --border-radius: 8px;
     --spacing-unit: 1rem;
 }
@@ -24,6 +25,13 @@ body {
     line-height: 1.6;
 }
 
+/* Make all text black by default */
+*, *::before, *::after {
+    color: var(--text-color) !important;
+}
+
+/* Override for elements that should not be black */
+
 nav {
     background-color: var(--primary-dark);
     padding: var(--spacing-unit);
@@ -34,7 +42,7 @@ nav {
 }
 
 .logo {
-    color: white;
+    color: var(--text-color);
     font-size: 1.5rem;
     font-weight: bold;
 }
@@ -46,7 +54,7 @@ nav {
 }
 
 .nav-links a {
-    color: white;
+    color: var(--text-color);
     text-decoration: none;
     padding: var(--spacing-unit) 1.5rem;
     border-radius: var(--border-radius);
@@ -76,11 +84,12 @@ main {
 }
 
 .stat-card {
-    background: var(--background-light);
+    background: #b6b29e;
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     text-align: center;
+    border: 2px solid #888888;
 }
 
 .stat-value {
@@ -98,22 +107,23 @@ main {
 
 .recent-transactions th {
     background-color: var(--primary-color);
-    color: white;
+    color: var(--text-color);
     padding: 1rem;
     text-align: left;
-    border-bottom: 2px solid var(--secondary-dark);
+    border-bottom: 2px solid var(--secondary-color);
 }
 
 .recent-transactions td {
+    background: #d2cfc0;
     padding: 0.5rem;
     border-bottom: 1px solid var(--secondary-light);
 }
 
 .add-transaction {
-    background: var(--background-light);
+    background: var(--secondary-color);
     padding: 2rem;
     border-radius: var(--border-radius);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
 }
 
 .form-group {
@@ -126,16 +136,18 @@ label {
     font-weight: bold;
 }
 
-input, select {
+input, select, textarea {
     width: 100%;
     padding: 0.5rem;
     border: 1px solid #ddd;
     border-radius: var(--border-radius);
+    color: var(--input-text-color) !important;
+    background: #b6b29e !important;
 }
 
 button {
     background-color: var(--primary-color);
-    color: white;
+    color: var(--text-color);
     padding: 0.75rem 1.5rem;
     border: none;
     border-radius: var(--border-radius);
