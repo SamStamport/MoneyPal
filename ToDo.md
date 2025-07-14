@@ -4,13 +4,15 @@ This file tracks the current tasks and to-do items for the MoneyPal project.
 
 # High Priority
 
-windsurf: how to make it start with this file open
+evaluate color scheme and functionality
 
 URLs for testing
 
 http://127.0.0.1:5000/login
 
 http://127.0.0.1:5000/
+
+windsurf: how to make it start with this file open
 
 ## Medium Priority
 

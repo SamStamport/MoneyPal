@@ -26,20 +26,14 @@
         "**/*.yaml": true,
         "**/*.yml": true,
         // Documentation and preview files
-        "**/CHANGELOG.md": true,
-        "**/CODE_OF_CONDUCT.md": true,
-        "**/CONTRIBUTING.md": true,
-        "**/DEVELOPMENT.md": true,
-        "**/ROADMAP.md": true,
-        "**/SECURITY.md": true,
-        "**/ToDo.md": true,
-        "**/tips.md": true,
+
         "**/categories_preview.html": true,
         "**/transactions_preview.html": true,
         "**/ui_preview.html": true,
         // Rarely used folders
         "**/instance": true,
-        "**/markdown": true,
+        "**/templates/categories/**": true,
+
         "**/data": true,
         // Rarely used scripts
         "**/db_check.py": true,
