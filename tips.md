@@ -95,4 +95,36 @@ To see actual database use https://sqlitebrowser.org/dl/
 
 Open the database file located at
 c:\Users\samst\CascadeProjects\MoneyPal\instance\moneypal.db
-*Last updated: 2025-07-08*
+
+---
+
+### How to Emulate a Phone Screen in Your Browser
+
+1. **Open your app** in the browser (e.g., go to
+
+   ```
+   http://127.0.0.1:5000
+   ```
+   ).
+2. **Open Developer Tools** :
+
+   * Press
+
+     ```
+     F12
+     ```
+     or
+   * Right-click anywhere on the page and select **Inspect** .
+3. **Toggle Device Toolbar** :
+
+   * Look for an icon that looks like a phone/tablet at the top-left of the Developer Tools panel (or press
+
+     ```
+     Ctrl+Shift+M
+     ```
+     ).
+   * Click this icon. The page should now shrink and look like a mobile device.
+4. **Select a Device Model** :
+
+   * At the top of the page (just below the address bar), you should see a dropdown that says something like "Responsive" or a device name (e.g., "iPhone SE").
+   * Click this dropdown to pick a specific device model (e.g., iPhone, Pixel, Galaxy).
