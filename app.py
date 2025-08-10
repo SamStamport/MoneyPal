@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 from models import db, CashFlow
+from ideas_capture import add_idea_route
 
 app = Flask(__name__)
 
@@ -14,6 +15,10 @@ db.init_app(app)
 # Create DB tables if they don't exist yet
 with app.app_context():
     db.create_all()
+
+# Add idea capture routes
+add_idea_route(app)
+
 
 @app.route('/', methods=['GET'])
 def list_entries():
@@ -53,6 +58,7 @@ def add_entry_ajax():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/update/<int:entry_id>', methods=['POST'])
 def update_entry(entry_id):
     try:
@@ -76,6 +82,7 @@ def update_entry(entry_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/delete/<int:entry_id>', methods=['DELETE'])
 def delete_entry(entry_id):
     try:
@@ -85,6 +92,7 @@ def delete_entry(entry_id):
         return jsonify({'success': True}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
 
 if __name__ == '__main__':
     app.run(debug=True)
