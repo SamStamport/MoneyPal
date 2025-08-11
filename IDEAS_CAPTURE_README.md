@@ -9,7 +9,7 @@ A lightweight, sticky-note style idea capture system for Flask applications. Per
 - **Rich Categorization**: Organize ideas by type (thought, code, todo, bug, feature)
 - **Tagging System**: Add multiple tags for easy organization
 - **Modern UI**: Clean, responsive design that works on all devices
-- **Export Functionality**: Export ideas as JSON for use in other tools (like Coda)
+- **CSV Export**: Export ideas as CSV for use in spreadsheet applications
 - **Persistent Storage**: Ideas are saved locally and persist between sessions
 
 ## Quick Start
@@ -17,19 +17,19 @@ A lightweight, sticky-note style idea capture system for Flask applications. Per
 ### 1. Copy Files
 
 Copy these files to your Flask project:
-- `ideas_capture_standalone.py` → Your project root
+- `ideas_capture.py` → Your project root
 - `templates/ideas.html` → Your `templates/` folder
 
 ### 2. Import and Use
 
 ```python
 from flask import Flask
-from ideas_capture_standalone import add_idea_routes
+from ideas_capture import add_idea_route
 
 app = Flask(__name__)
 
 # Add the ideas capture routes
-add_idea_routes(app)
+add_idea_route(app)
 
 if __name__ == '__main__':
     app.run(debug=True)
@@ -59,20 +59,21 @@ Visit `/ideas` in your browser to start capturing ideas!
 
 ### Exporting
 
-- Click "Export All Ideas" to download a JSON file
-- Perfect for importing into Coda, Notion, or other tools
+- Click "Export All Ideas" to download a CSV file
+- Perfect for importing into Excel, Google Sheets, or other spreadsheet tools
 - Includes all metadata (timestamps, tags, categories)
+- Filename format: `ideas_export_YYYYMMDD_HHMMSS.csv`
 
 ## Configuration
 
-You can customize the system by modifying these variables in `ideas_capture_standalone.py`:
+You can customize the system by modifying these variables in `ideas_capture.py`:
 
 ```python
 # Change where ideas are stored
 IDEAS_FILE = 'ideas.json'
 
-# Change template folder location
-TEMPLATE_FOLDER = 'templates'
+# Change template folder location (in your Flask app)
+app.template_folder = 'templates'
 ```
 
 ## Data Structure
@@ -91,93 +92,42 @@ Each idea is stored with this structure:
 }
 ```
 
+## CSV Export Format
+
+The CSV export includes these columns:
+- **ID**: Unique identifier
+- **Content**: The idea text
+- **Category**: Idea category
+- **Type**: Idea type (thought, code, todo, etc.)
+- **Tags**: Comma-separated tags
+- **Created At**: ISO timestamp of creation
+- **Updated At**: ISO timestamp of last update
+
 ## Requirements
 
 - **Python**: 3.6 or higher
 - **Flask**: Any recent version
-- **Dependencies**: Only standard library modules (json, os, datetime)
+- **Dependencies**: Only standard library modules (json, csv, os, datetime, io)
 
-## Standalone Testing
+## API Endpoints
 
-You can test the system independently:
+- `GET /ideas` - Display ideas page
+- `POST /ideas/add` - Add new idea
+- `PUT /ideas/<id>` - Update existing idea
+- `DELETE /ideas/<id>` - Delete idea
+- `GET /ideas/export` - Export ideas as CSV
+- `POST /ideas/clear` - Clear all ideas (use with caution)
 
-```bash
-python ideas_capture_standalone.py
-```
+## Integration Tips
 
-This will start a minimal Flask server at `http://localhost:5000` with just the ideas capture functionality.
-
-## Integration Examples
-
-### With Existing Flask Apps
-
-```python
-# app.py
-from flask import Flask
-from ideas_capture_standalone import add_idea_routes
-
-app = Flask(__name__)
-
-# Your existing routes
-@app.route('/')
-def home():
-    return "My App"
-
-# Add ideas capture
-add_idea_routes(app)
-```
-
-### With Blueprints
-
-```python
-# ideas_blueprint.py
-from flask import Blueprint
-from ideas_capture_standalone import add_idea_routes
-
-ideas_bp = Blueprint('ideas', __name__)
-add_idea_routes(ideas_bp)
-
-# In your main app
-app.register_blueprint(ideas_bp, url_prefix='/ideas')
-```
-
-## Customization
-
-### Adding New Idea Types
-
-Edit the HTML template to add new types:
-
-```html
-<option value="research">🔬 Research</option>
-<option value="meeting">📅 Meeting</option>
-```
-
-### Styling
-
-The system uses CSS Grid and modern CSS features. Modify the styles in `templates/ideas.html` to match your app's theme.
-
-### Database Integration
-
-To use a database instead of JSON files, modify the `load_ideas()` and `save_ideas()` functions in `ideas_capture_standalone.py`.
+- **Standalone Use**: Can be used independently in any Flask project
+- **Template Customization**: Modify `ideas.html` to match your app's design
+- **Data Migration**: Ideas are stored in JSON format, easy to migrate or backup
+- **Multi-Project**: Use different category names to organize ideas by project
 
 ## Troubleshooting
 
-### Ideas Not Saving
-- Check file permissions for `ideas.json`
-- Ensure the `templates/` folder is in the right location
-
-### Template Errors
-- Verify `ideas.html` is in your `templates/` folder
-- Check Flask template configuration
-
-### Import Errors
-- Ensure `ideas_capture_standalone.py` is in your Python path
-- Check that all required Flask imports are available
-
-## License
-
-This system is provided as-is for educational and development purposes. Feel free to modify and use in your projects.
-
-## Contributing
-
-Improvements and bug fixes are welcome! The system is designed to be simple and extensible.
+- **Ideas not saving**: Check file permissions for `ideas.json`
+- **Export not working**: Ensure CSV module is available (Python 3.6+)
+- **Template errors**: Verify `ideas.html` is in your templates folder
+- **Import errors**: Make sure `ideas_capture.py` is in your Python path

@@ -29,15 +29,36 @@
             color: white;
         }
 
-        .header h1 {
+                .header h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-
+        
         .header p {
             font-size: 1.1rem;
             opacity: 0.9;
+        }
+        
+        .nav-links {
+            margin-top: 20px;
+        }
+        
+        .nav-links a {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            margin: 0 10px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
         }
 
         .quick-add {
@@ -292,6 +313,11 @@
         <div class="header">
             <h1>💡 Idea Capture</h1>
             <p>Quick sticky notes for your thoughts, code snippets, and ideas</p>
+            <div class="nav-links">
+                <a href="/">🏠 Dashboard</a>
+                <a href="/cashflow">📊 Cash Flow</a>
+                <a href="/export-csv">📥 Export Data</a>
+            </div>
         </div>
 
         <div class="quick-add">
@@ -348,8 +374,8 @@
         </div>
 
         <div class="export-section">
-            <h3>Export to Coda</h3>
-            <p>Download your ideas as JSON to import into Coda or other tools</p>
+            <h3>Export Ideas</h3>
+            <p>Download your ideas as CSV for use in Excel, Google Sheets, or other tools</p>
             <button class="btn" onclick="exportIdeas()">Export All Ideas</button>
             <button class="btn btn-secondary" onclick="clearAllIdeas()">Clear All Ideas</button>
         </div>

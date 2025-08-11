@@ -1,8 +1,9 @@
 # app.py
 from flask import Flask, render_template, request, jsonify
-from datetime import datetime
+from datetime import datetime, date
 from models import db, CashFlow
 from ideas_capture import add_idea_route
+from sqlalchemy import func
 
 app = Flask(__name__)
 
@@ -21,10 +22,56 @@ add_idea_route(app)
 
 
 @app.route('/', methods=['GET'])
+def dashboard():
+    """Financial dashboard with summary and recent transactions"""
+    # Get current month and year
+    today = date.today()
+    current_month = today.month
+    current_year = today.year
+    
+    # Get monthly summary
+    monthly_summary = db.session.query(
+        func.sum(CashFlow.amount).label('total'),
+        func.count(CashFlow.id).label('count')
+    ).filter(
+        func.extract('month', CashFlow.date) == current_month,
+        func.extract('year', CashFlow.date) == current_year
+    ).first()
+    
+    # Get category breakdown for current month
+    category_summary = db.session.query(
+        CashFlow.category,
+        func.sum(CashFlow.amount).label('total'),
+        func.count(CashFlow.id).label('count')
+    ).filter(
+        func.extract('month', CashFlow.date) == current_month,
+        func.extract('year', CashFlow.date) == current_year
+    ).group_by(CashFlow.category).order_by(
+        func.sum(CashFlow.amount).desc()
+    ).all()
+    
+    # Get recent transactions (last 10)
+    recent_entries = CashFlow.query.order_by(CashFlow.date.desc()).limit(10).all()
+    
+    # Calculate net worth (sum of all transactions)
+    net_worth = db.session.query(func.sum(CashFlow.amount)).scalar() or 0
+    
+    return render_template('dashboard.html', 
+                         monthly_summary=monthly_summary,
+                         category_summary=category_summary,
+                         recent_entries=recent_entries,
+                         net_worth=net_worth,
+                         current_month=current_month,
+                         current_year=current_year)
+
+
+@app.route('/cashflow', methods=['GET'])
 def list_entries():
+    """Cash flow entries management page"""
     # Fetch all entries ordered by date ascending
     entries = CashFlow.query.order_by(CashFlow.date).all()
     return render_template('cashflow.html', entries=entries)
+
 
 @app.route('/add-ajax', methods=['POST'])
 def add_entry_ajax():
@@ -92,6 +139,48 @@ def delete_entry(entry_id):
         return jsonify({'success': True}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+
+@app.route('/export-csv', methods=['GET'])
+def export_cashflow_csv():
+    """Export cash flow data as CSV"""
+    from io import StringIO
+    import csv
+    
+    # Get all entries
+    entries = CashFlow.query.order_by(CashFlow.date).all()
+    
+    # Create CSV data
+    csvfile = StringIO()
+    writer = csv.writer(csvfile)
+    
+    # Write header
+    writer.writerow(['Date', 'Amount', 'Description', 'Category', 'Notes'])
+    
+    # Write data rows
+    for entry in entries:
+        writer.writerow([
+            entry.date.strftime('%Y-%m-%d'),
+            entry.amount,
+            entry.description or '',
+            entry.category or '',
+            entry.notes or ''
+        ])
+    
+    # Create response with CSV content
+    output = csvfile.getvalue()
+    csvfile.close()
+    
+    # Generate filename with timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f'cashflow_export_{timestamp}.csv'
+    
+    from flask import Response
+    return Response(
+        output,
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename={filename}'}
+    )
 
 
 if __name__ == '__main__':
