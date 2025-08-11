@@ -1,8 +1,10 @@
 # ideas_capture.py - Generic Quick Idea Capture System
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, Response
 import json
+import csv
 import os
 from datetime import datetime
+from io import StringIO
 
 
 # File to store ideas (simple JSON storage)
@@ -114,13 +116,46 @@ def add_idea_route(app):
     
     @app.route('/ideas/export', methods=['GET'])
     def export_ideas():
-        """Export all ideas for Coda import"""
+        """Export all ideas in CSV format"""
         ideas = load_ideas()
-        return jsonify({
-            'export_date': datetime.now().isoformat(),
-            'total_ideas': len(ideas),
-            'ideas': ideas
-        })
+        
+        # Create CSV data
+        csvfile = StringIO()
+        writer = csv.writer(csvfile)
+        
+        # Write header
+        writer.writerow([
+            'ID', 'Content', 'Category', 'Type', 'Tags',
+            'Created At', 'Updated At'
+        ])
+        
+        # Write data rows
+        for idea in ideas:
+            tags_str = (', '.join(idea.get('tags', []))
+                        if idea.get('tags') else '')
+            writer.writerow([
+                idea['id'],
+                idea['content'],
+                idea['category'],
+                idea['type'],
+                tags_str,
+                idea['created_at'],
+                idea['updated_at']
+            ])
+        
+        # Create response with CSV content
+        output = csvfile.getvalue()
+        csvfile.close()
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f'ideas_export_{timestamp}.csv'
+        
+        return Response(
+            output,
+            mimetype='text/csv',
+            headers={'Content-Disposition': f'attachment; filename={filename}'}
+        )
     
     @app.route('/ideas/clear', methods=['POST'])
     def clear_ideas():
@@ -128,7 +163,7 @@ def add_idea_route(app):
         try:
             save_ideas([])
             return jsonify({
-                'success': True, 
+                'success': True,
                 'message': 'All ideas cleared'
             }), 200
         except Exception as e:
