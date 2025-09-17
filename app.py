@@ -38,6 +38,10 @@ def dashboard():
         func.extract('year', CashFlow.date) == current_year
     ).first()
     
+    # Handle None values
+    if monthly_summary.total is None:
+        monthly_summary = type('obj', (object,), {'total': 0, 'count': 0})()
+    
     # Get category breakdown for current month
     category_summary = db.session.query(
         CashFlow.category,

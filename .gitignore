@@ -19,9 +19,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
-# Virtual Environment
+# Virtual environments
 .venv/
 venv/
 ENV/
@@ -29,35 +28,23 @@ env/
 
 # Database
 *.db
-*.sqlite
-*.sqlite3
-
-# Flask
-instance/
-.webassets-cache
+cashflow.db
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
 Thumbs.db
 
+# Environment variables
+.env
+
 # Logs
 *.log
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# MyPy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+# Ideas data
+ideas.json

@@ -52,40 +52,39 @@ MoneyPal/
    cd MoneyPal
    ```
 
-2. **Create virtual environment**
+2. **Run as Desktop App (Recommended)**
    ```bash
-   python -m venv .venv
-   .venv\Scripts\activate  # Windows
-   # source .venv/bin/activate  # macOS/Linux
+   # Double-click run_desktop.bat or run in command prompt:
+   run_desktop.bat
    ```
+   This automatically installs dependencies and launches the native Windows app.
 
-3. **Install dependencies**
+3. **Alternative: Web Browser Mode**
    ```bash
    pip install -r requirements.txt
-   ```
-
-4. **Run the application**
-   ```bash
    python app.py
    ```
-
-5. **Access the application**
-   - Main app: http://localhost:5000
-   - Ideas capture: http://localhost:5000/ideas
+   Then visit: http://localhost:5000
 
 ## 📊 Usage
+
+### Desktop Application
+- **Launch**: Double-click `run_desktop.bat`
+- **Interface**: Native Windows application window
+- **Close**: Click the X button on the app window
+- **Data**: Automatically saved to local database
 
 ### Cash Flow Management
 - Add income and expense entries
 - Categorize transactions
-- View financial summaries
-- Export data for analysis
+- View financial dashboard with monthly summaries
+- Export data to CSV format
 
 ### Ideas Capture
 - Quick note taking while working
 - Organize thoughts by project
 - Export ideas to CSV
-- Perfect for project management
+- Access via /ideas route
 
 ## 🔧 Configuration
 
@@ -108,16 +107,18 @@ The application uses SQLite by default. The database file (`cashflow.db`) will b
 - [x] Ideas capture system
 - [x] CSV export functionality
 
-### Phase 2: Financial Features 🚧
-- [ ] Complete cash flow CRUD operations
-- [ ] Financial dashboard and reporting
-- [ ] Category management
-- [ ] Data visualization
+### Phase 2: Financial Features ✅
+- [x] Complete cash flow CRUD operations
+- [x] Financial dashboard and reporting
+- [x] Category management
+- [x] Native desktop application
 
 ### Phase 3: Advanced Features 📋
-- [ ] User authentication
-- [ ] Budget planning
+- [ ] Data visualization charts
+- [ ] Budget planning and alerts
 - [ ] Goal tracking
+- [ ] Standalone executable (.exe)
+- [ ] User authentication
 - [ ] Mobile app
 
 ## 🤝 Contributing
