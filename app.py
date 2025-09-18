@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime, date
 from models import db, CashFlow
-from ideas_capture import add_idea_route
+
 from sqlalchemy import func
 
 app = Flask(__name__)
@@ -21,8 +21,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-# Add idea capture routes
-add_idea_route(app)
+
 
 
 @app.route('/', methods=['GET'])

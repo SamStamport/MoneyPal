@@ -10,11 +10,7 @@ A Flask-based web application for tracking personal income, expenses, and financ
 - **Category Management**: Organize transactions by type and purpose
 - **Data Export**: Export financial data in multiple formats
 
-### Ideas Capture System
-- **Quick Note Taking**: Capture thoughts, todos, and code snippets
-- **CSV Export**: Export ideas to spreadsheet applications
-- **Tagging System**: Organize ideas with custom tags and categories
-- **Persistent Storage**: All data saved locally
+
 
 ## 🛠️ Technology Stack
 
@@ -67,11 +63,7 @@ MoneyPal/
 - View financial dashboard with monthly summaries
 - Export data to CSV format
 
-### Ideas Capture
-- Quick note taking while working
-- Organize thoughts by project
-- Export ideas to CSV
-- Access via /ideas route
+
 
 ## 🔧 Configuration
 
