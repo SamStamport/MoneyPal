@@ -25,13 +25,12 @@ A Flask-based web application for tracking personal income, expenses, and financ
 MoneyPal/
 ├── app.py                 # Main Flask application
 ├── models.py             # Database models (CashFlow)
-├── ideas_capture.py      # Ideas capture system
 ├── requirements.txt      # Python dependencies
-├── cashflow.db          # SQLite database
+├── seed_sample_data.py   # Sample data generator
 ├── templates/            # HTML templates
-│   ├── cashflow.html    # Cash flow management
-│   └── ideas.html       # Ideas capture interface
-└── instance/            # Instance-specific files
+│   ├── dashboard.html   # Financial dashboard
+│   └── cashflow.html    # Cash flow management
+└── project_files_overview.txt # Project documentation
 ```
 
 ## 🚀 Quick Start
@@ -76,15 +75,15 @@ DATABASE_URL=sqlite:///cashflow.db
 ```
 
 ### Database
-The application uses SQLite by default. The database file (`cashflow.db`) will be created automatically on first run.
+The application uses SQLite and stores data in `C:\Users\[username]\Documents\MoneyPal\cashflow.db`. The database will be created automatically on first run.
 
 ## 📈 Roadmap
 
 ### Phase 1: Core Features ✅
 - [x] Basic Flask application structure
 - [x] Database models and setup
-- [x] Ideas capture system
 - [x] CSV export functionality
+- [x] Sample data generation
 
 ### Phase 2: Financial Features ✅
 - [x] Complete cash flow CRUD operations
@@ -113,7 +112,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 - **Issues**: Report bugs and feature requests on GitHub
-- **Documentation**: Check the [IDEAS_CAPTURE_README.md](IDEAS_CAPTURE_README.md) for detailed usage
+- **Documentation**: Check the project_files_overview.txt for detailed file descriptions
 - **Questions**: Open a discussion on GitHub
 
 ## 🔄 Changelog
