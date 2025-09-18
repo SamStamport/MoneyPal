@@ -8,37 +8,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Ideas capture system with CSV export functionality
-- Cash flow database models and SQLAlchemy integration
-- Basic Flask application structure
-- HTML templates for cash flow and ideas management
-- Project documentation and roadmap
+- Complete cash flow CRUD operations (create, read, update, delete)
+- Financial dashboard with monthly summaries and category breakdowns
+- Sample data generation script for testing
+- Project files overview documentation
+- Database storage in Documents folder for persistence
 
 ### Changed
-- Converted ideas export from JSON to CSV format
-- Improved code formatting and removed linter warnings
-- Updated project structure and organization
+- Removed ideas capture functionality to focus on financial tracking
+- Updated database path to use Documents folder
+- Streamlined project structure
+- Updated documentation to reflect current features
 
 ### Fixed
-- N/A
+- Database path consistency between different execution methods
+- Monthly summary handling for empty datasets
 
 ### Removed
-- N/A
+- Ideas capture system (moved to separate Coda integration project)
+- Desktop application functionality
+- Unused template files
 
-## [0.2.0] - 2025-08-11
+## [1.0.0] - 2025-09-18
 
 ### Added
-- CSV export functionality for ideas capture system
-- Improved ideas capture system with better formatting
-- Enhanced project documentation
+- Complete financial dashboard with monthly summaries
+- Full CRUD operations for cash flow transactions
+- CSV export functionality for financial data
+- Sample data generation for testing
+- Comprehensive project documentation
 
 ### Changed
-- Export format changed from JSON to CSV for better spreadsheet compatibility
-- Code formatting improvements and linter warning fixes
+- Focused application on financial tracking only
+- Database location moved to Documents folder
+- Simplified project structure
 
 ### Fixed
-- Line length and indentation issues in ideas_capture.py
-- Removed unused variables and imports
+- Database consistency across different execution methods
+- Error handling for empty transaction datasets
+
+### Removed
+- Ideas capture functionality (moved to separate project)
+- Desktop application features
 
 ## [0.1.0] - 2025-07-27
 
@@ -79,6 +90,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Security-related fixes
 
-[Unreleased]: https://github.com/SamStamport/MoneyPal/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/SamStamport/MoneyPal/compare/v0.1.0...v0.2.0
+[Unreleased]: https://github.com/SamStamport/MoneyPal/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/SamStamport/MoneyPal/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/SamStamport/MoneyPal/releases/tag/v0.1.0

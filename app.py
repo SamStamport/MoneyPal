@@ -191,4 +191,8 @@ def export_cashflow_csv():
 
 
 if __name__ == '__main__':
+    print("\n" + "="*60)
+    print("\033[1;33m🚀 MONEYPAL STARTING...\033[0m")
+    print("\033[1;32m📱 OPEN http://127.0.0.1:5000/ IN YOUR BROWSER!\033[0m")
+    print("="*60 + "\n")
     app.run(debug=True)

@@ -1,5 +1,7 @@
 # MoneyPal - Personal Cash Flow Tracker
 
+> **🚀 QUICK START REMINDER:** After running `python app.py`, open http://127.0.0.1:5000/ in your browser
+
 A Flask-based web application for tracking personal income, expenses, and financial goals. Built with modern web technologies and designed for easy use and data export.
 
 ## 🚀 Features
