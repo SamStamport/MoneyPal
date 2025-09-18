@@ -4,7 +4,9 @@ from flask import Flask
 from models import db, CashFlow
 
 # Configuration
-DB_URI = 'sqlite:///cashflow.db'
+import os
+db_path = os.path.join(os.path.expanduser('~'), 'Documents', 'MoneyPal', 'cashflow.db')
+DB_URI = f'sqlite:///{db_path}'
 START_DATE = date(2025, 6, 1)
 END_DATE = date(2025, 7, 31)
 STARTING_BALANCE = 3250.00  # Made-up starting balance
@@ -79,8 +81,8 @@ def cap_to_balance(balance: float, change: float) -> float:
 
 def clear_existing_range(start: date, end: date):
     # Remove existing entries in the date range to avoid duplicates
-    # Use the actual table name from the database
-    db.session.execute('DELETE FROM cash_flow WHERE date >= :start AND date <= :end', 
+    from sqlalchemy import text
+    db.session.execute(text('DELETE FROM cash_flow WHERE date >= :start AND date <= :end'), 
                       {'start': start, 'end': end})
     db.session.commit()
 
@@ -168,10 +170,10 @@ def seed_data():
         db.session.commit()
 
         # Basic summary - use the actual table name
-        from sqlalchemy import func
-        totals = db.session.execute(
+        from sqlalchemy import func, text
+        totals = db.session.execute(text(
             'SELECT strftime("%Y-%m", date) as ym, COUNT(*) as count, SUM(amount) as total '
-            'FROM cash_flow WHERE date >= :start AND date <= :end GROUP BY ym',
+            'FROM cash_flow WHERE date >= :start AND date <= :end GROUP BY ym'),
             {'start': START_DATE, 'end': END_DATE}
         ).fetchall()
 

@@ -8,7 +8,11 @@ from sqlalchemy import func
 app = Flask(__name__)
 
 # Configure database URI and disable track modifications for performance
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cashflow.db'
+# Use absolute path to ensure same database location regardless of execution method
+import os
+db_path = os.path.join(os.path.expanduser('~'), 'Documents', 'MoneyPal', 'cashflow.db')
+os.makedirs(os.path.dirname(db_path), exist_ok=True)
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)

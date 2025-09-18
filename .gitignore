@@ -27,8 +27,8 @@ ENV/
 env/
 
 # Database
-*.db
-cashflow.db
+# *.db
+# cashflow.db
 
 # IDE
 .vscode/

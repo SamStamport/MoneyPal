@@ -52,14 +52,7 @@ MoneyPal/
    cd MoneyPal
    ```
 
-2. **Run as Desktop App (Recommended)**
-   ```bash
-   # Double-click run_desktop.bat or run in command prompt:
-   run_desktop.bat
-   ```
-   This automatically installs dependencies and launches the native Windows app.
-
-3. **Alternative: Web Browser Mode**
+2. **Install dependencies and run**
    ```bash
    pip install -r requirements.txt
    python app.py
@@ -67,12 +60,6 @@ MoneyPal/
    Then visit: http://localhost:5000
 
 ## 📊 Usage
-
-### Desktop Application
-- **Launch**: Double-click `run_desktop.bat`
-- **Interface**: Native Windows application window
-- **Close**: Click the X button on the app window
-- **Data**: Automatically saved to local database
 
 ### Cash Flow Management
 - Add income and expense entries
@@ -111,13 +98,11 @@ The application uses SQLite by default. The database file (`cashflow.db`) will b
 - [x] Complete cash flow CRUD operations
 - [x] Financial dashboard and reporting
 - [x] Category management
-- [x] Native desktop application
 
 ### Phase 3: Advanced Features 📋
 - [ ] Data visualization charts
 - [ ] Budget planning and alerts
 - [ ] Goal tracking
-- [ ] Standalone executable (.exe)
 - [ ] User authentication
 - [ ] Mobile app
 
