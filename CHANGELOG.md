@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Advanced Auto-Save Functionality**: Google Sheets-like inline editing experience
+  - Click any cell to edit inline with automatic saving on blur
+  - Visual feedback with color-coded states (unsaved, saving, saved, error)
+  - Debounced auto-save with 500ms delay to prevent excessive API calls
+  - Retry logic with exponential backoff for network errors (up to 3 attempts)
+  - Real-time data validation for dates and amounts
+  - Error tooltips with click-to-retry functionality
+  - Currency formatting for amount fields
+  - ESC key to cancel editing and revert changes
+  - Network status indicator (online/offline)
 - Complete cash flow CRUD operations (create, read, update, delete)
 - Financial dashboard with monthly summaries and category breakdowns
 - Sample data generation script for testing
