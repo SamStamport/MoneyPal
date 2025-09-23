@@ -205,7 +205,7 @@
         
         .content-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1fr;
             gap: 25px;
         }
         
@@ -549,33 +549,25 @@
                             <div>Category</div>
                             <div>Amount</div>
                         </div>
-                        <div class="transaction-item">
-                            <div class="transaction-date">2025-07-15</div>
-                            <div class="transaction-info">
-                                <h4>Internet Provider</h4>
-                                <p>Monthly service</p>
+                        {% if recent_entries %}
+                            {% for entry in recent_entries %}
+                            <div class="transaction-item">
+                                <div class="transaction-date">{{ entry.date.strftime('%Y-%m-%d') }}</div>
+                                <div class="transaction-info">
+                                    <h4>{{ entry.description or 'No description' }}</h4>
+                                    <p>{{ entry.category or 'Uncategorized' }}</p>
+                                </div>
+                                <div class="transaction-category">{{ entry.category or 'N/A' }}</div>
+                                <div class="transaction-amount {% if entry.amount >= 0 %}amount-positive{% else %}amount-negative{% endif %}">
+                                    ${{ "%.2f"|format(entry.amount) }}
+                                </div>
                             </div>
-                            <div class="transaction-category">utilities</div>
-                            <div class="transaction-amount amount-negative">$-68.76</div>
-                        </div>
-                        <div class="transaction-item">
-                            <div class="transaction-date">2025-07-15</div>
-                            <div class="transaction-info">
-                                <h4>Internet Provider</h4>
-                                <p>Monthly service</p>
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-data">
+                                <p>No transactions yet. Start tracking your finances!</p>
                             </div>
-                            <div class="transaction-category">utilities</div>
-                            <div class="transaction-amount amount-negative">$-68.76</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="section">
-                    <div class="section-header">🏷️ Category Breakdown</div>
-                    <div class="section-content">
-                        <div class="no-data">
-                            <p>No category data available</p>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

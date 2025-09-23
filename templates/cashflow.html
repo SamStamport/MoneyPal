@@ -157,6 +157,97 @@
       background-color: white;
     }
 
+    /* Auto-save visual states */
+    .editable-cell {
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .editable-cell.unsaved {
+      background-color: #fff3cd !important;
+      border-left: 3px solid #ffc107;
+    }
+
+    .editable-cell.saving {
+      background-color: #d1ecf1 !important;
+      border-left: 3px solid #17a2b8;
+      opacity: 0.8;
+    }
+
+    .editable-cell.saved {
+      background-color: #d4edda !important;
+      border-left: 3px solid #28a745;
+      animation: fadeToNormal 2s ease-in-out forwards;
+    }
+
+    .editable-cell.error {
+      background-color: #f8d7da !important;
+      border-left: 3px solid #dc3545;
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes fadeToNormal {
+      0% { background-color: #d4edda; border-left-color: #28a745; }
+      100% { background-color: inherit; border-left-color: transparent; }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-2px); }
+      75% { transform: translateX(2px); }
+    }
+
+    /* Loading spinner */
+    .saving::after {
+      content: '';
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      border: 2px solid #17a2b8;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: translateY(-50%) rotate(0deg); }
+      100% { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    /* Error tooltip */
+    .error-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      background: #dc3545;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(5px);
+      transition: all 0.2s ease;
+    }
+
+    .error-tooltip.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .error-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 10px;
+      border: 4px solid transparent;
+      border-top-color: #dc3545;
+    }
+
     .delete-btn {
       background: linear-gradient(to bottom, #ff6b6b, #ff4444);
       color: white;
@@ -352,7 +443,7 @@
 
             fields.forEach(({field, value}) => {
               const td = document.createElement('td');
-              td.classList.add('editable');
+              td.classList.add('editable', 'editable-cell');
               td.setAttribute('contenteditable', 'true');
               td.setAttribute('data-field', field);
               td.textContent = value || '';
@@ -435,55 +526,209 @@
       return /^\d{4}-\d{2}-\d{2}$/.test(dateString);
     }
 
+    // Debounce utility
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    // Format currency amount
+    function formatCurrency(amount) {
+      const num = parseFloat(amount);
+      return isNaN(num) ? '0.00' : num.toFixed(2);
+    }
+
+    // Validate field data
+    function validateField(field, value) {
+      switch (field) {
+        case 'date':
+          return /^\d{4}-\d{2}-\d{2}$/.test(value) && !isNaN(Date.parse(value));
+        case 'amount':
+          return !isNaN(parseFloat(value)) && isFinite(value);
+        default:
+          return true;
+      }
+    }
+
+    // Show error tooltip
+    function showErrorTooltip(cell, message) {
+      // Remove existing tooltip
+      const existingTooltip = cell.querySelector('.error-tooltip');
+      if (existingTooltip) {
+        existingTooltip.remove();
+      }
+
+      const tooltip = document.createElement('div');
+      tooltip.className = 'error-tooltip';
+      tooltip.textContent = message;
+      cell.style.position = 'relative';
+      cell.appendChild(tooltip);
+
+      // Show tooltip
+      setTimeout(() => tooltip.classList.add('show'), 10);
+
+      // Hide tooltip after 3 seconds
+      setTimeout(() => {
+        tooltip.classList.remove('show');
+        setTimeout(() => tooltip.remove(), 200);
+      }, 3000);
+    }
+
+    // Auto-save with retry logic
+    async function autoSave(cell, field, value, entryId, retryCount = 0) {
+      const maxRetries = 3;
+      const retryDelay = 1000 * Math.pow(2, retryCount); // Exponential backoff
+
+      try {
+        // Set saving state
+        cell.className = cell.className.replace(/\b(unsaved|saved|error)\b/g, '').trim() + ' saving';
+        
+        const updateData = {};
+        updateData[field] = value;
+
+        const response = await fetch(`/update/${entryId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updateData)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `HTTP ${response.status}`);
+        }
+
+        // Success - format currency if amount field
+        if (field === 'amount') {
+          cell.textContent = formatCurrency(value);
+        }
+
+        // Set saved state
+        cell.className = cell.className.replace(/\b(unsaved|saving|error)\b/g, '').trim() + ' saved';
+        
+        // Update original value
+        cell.setAttribute('data-original', cell.textContent.trim());
+
+        // Update any calculated fields (like running balance)
+        updateCalculatedFields();
+
+      } catch (error) {
+        console.error('Auto-save error:', error);
+
+        if (retryCount < maxRetries) {
+          // Retry with exponential backoff
+          setTimeout(() => {
+            autoSave(cell, field, value, entryId, retryCount + 1);
+          }, retryDelay);
+          return;
+        }
+
+        // Max retries reached - show error state
+        cell.className = cell.className.replace(/\b(unsaved|saving|saved)\b/g, '').trim() + ' error';
+        
+        // Revert to original value
+        cell.textContent = cell.getAttribute('data-original') || '';
+        
+        // Show error tooltip
+        showErrorTooltip(cell, `Save failed: ${error.message}. Click to retry.`);
+        
+        // Add click to retry
+        const retryHandler = () => {
+          cell.removeEventListener('click', retryHandler);
+          autoSave(cell, field, value, entryId, 0);
+        };
+        cell.addEventListener('click', retryHandler, { once: true });
+      }
+    }
+
+    // Update calculated fields (placeholder for future enhancements)
+    function updateCalculatedFields() {
+      // This could calculate running balances, totals, etc.
+      // For now, just update the entry count
+      updateEntryCount();
+    }
+
+    // Debounced auto-save function
+    const debouncedAutoSave = debounce(autoSave, 500);
+
     // Add inline editing save on blur for given editable cells
     function attachInlineEditListeners(cells) {
       cells.forEach(td => {
+        // Add editable-cell class if not present
+        if (!td.classList.contains('editable-cell')) {
+          td.classList.add('editable-cell');
+        }
+
+        td.addEventListener('input', function() {
+          // Mark as unsaved on input
+          td.className = td.className.replace(/\b(saving|saved|error)\b/g, '').trim() + ' unsaved';
+        });
+
         td.addEventListener('blur', function() {
           const newValue = td.textContent.trim();
+          const originalValue = td.getAttribute('data-original') || '';
           const field = td.getAttribute('data-field');
           const row = td.closest('tr');
           const entryId = row.getAttribute('data-id');
 
-          if (field === 'date' && !isValidDate(newValue)) {
-            alert('Invalid date format. Use YYYY-MM-DD.');
-            td.textContent = td.getAttribute('data-original') || '';
-            return;
-          }
-          if (field === 'amount' && isNaN(parseFloat(newValue))) {
-            alert('Amount must be a number.');
-            td.textContent = td.getAttribute('data-original') || '';
+          // Skip if value hasn't changed
+          if (newValue === originalValue) {
+            td.className = td.className.replace(/\b(unsaved|saving|saved|error)\b/g, '').trim();
             return;
           }
 
-          const updateData = {};
-          updateData[field] = newValue;
-          td.setAttribute('data-original', newValue);
-
-          fetch(`/update/${entryId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updateData)
-          })
-          .then(response => {
-            if (!response.ok) {
-              return response.json().then(err => { throw err; });
+          // Validate field data
+          if (!validateField(field, newValue)) {
+            let errorMessage;
+            switch (field) {
+              case 'date':
+                errorMessage = 'Invalid date format. Use YYYY-MM-DD.';
+                break;
+              case 'amount':
+                errorMessage = 'Amount must be a valid number.';
+                break;
+              default:
+                errorMessage = 'Invalid value.';
             }
-            return response.json();
-          })
-          .catch(error => {
-            alert('Error updating entry: ' + (error.error || error));
-            td.textContent = td.getAttribute('data-original') || '';
-          });
+            
+            td.className = td.className.replace(/\b(unsaved|saving|saved)\b/g, '').trim() + ' error';
+            showErrorTooltip(td, errorMessage);
+            
+            // Revert to original value after a delay
+            setTimeout(() => {
+              td.textContent = originalValue;
+              td.className = td.className.replace(/\b(unsaved|saving|saved|error)\b/g, '').trim();
+            }, 2000);
+            return;
+          }
+
+          // Auto-save with debouncing
+          debouncedAutoSave(td, field, newValue, entryId);
         });
 
         td.addEventListener('focus', function() {
+          // Store original value and clear any error states
           td.setAttribute('data-original', td.textContent.trim());
+          td.className = td.className.replace(/\b(unsaved|saving|saved|error)\b/g, '').trim();
+          
+          // Remove any error tooltips
+          const tooltip = td.querySelector('.error-tooltip');
+          if (tooltip) {
+            tooltip.remove();
+          }
         });
 
         // ESC key to cancel editing
         td.addEventListener('keydown', function(event) {
           if (event.key === 'Escape') {
             td.textContent = td.getAttribute('data-original') || '';
+            td.className = td.className.replace(/\b(unsaved|saving|saved|error)\b/g, '').trim();
             td.blur();
           }
         });
@@ -491,10 +736,22 @@
     }
 
     // Attach listeners on existing rows on page load
+    document.querySelectorAll('td.editable').forEach(td => {
+      td.classList.add('editable-cell');
+    });
     attachInlineEditListeners(document.querySelectorAll('td.editable'));
     
     // Initialize entry count
     updateEntryCount();
+
+    // Add network status indicator
+    window.addEventListener('online', () => {
+      document.querySelector('.status-bar .status-info span').textContent = 'Online';
+    });
+
+    window.addEventListener('offline', () => {
+      document.querySelector('.status-bar .status-info span').textContent = 'Offline - Changes will sync when online';
+    });
   </script>
 </body>
 </html>
