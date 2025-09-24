@@ -2,14 +2,37 @@
 
 > **🚀 QUICK START REMINDER:** After running `python app.py`, open http://127.0.0.1:5000/ in your browser
 
-A Flask-based web application for tracking personal income, expenses, and financial goals. Built with modern web technologies and designed for easy use and data export.
+A Flask-based personal finance PWA focused on **cash flow forecasting** rather than traditional budgeting. The key insight: most apps track past spending but don't solve the real problem of "will I have enough money left at the end of the month?"
+
+## 💡 Project Vision
+
+**MoneyPal** addresses a key gap in personal finance apps: most track past spending but don't solve the real problem of "will I have enough money left at the end of the month?"
+
+### Our Approach
+- **Cash Flow Forecasting**: AI-powered predictions based on historical spending patterns
+- **Forward-Looking**: Focus on future financial health vs. past analysis
+- **Voice-First**: Hands-free expense logging and conversational financial insights
+- **Privacy-Focused**: Manual data entry gives users full control over their financial data
+- **Minimal & Focused**: Essential features without bloat
+
+### Target Users
+- People frustrated with traditional budgeting apps
+- Those seeking forward-looking financial insights
+- Users who value privacy and data control
+- Individuals wanting hands-free expense tracking
+
+### Competitive Advantages
+- **Cash flow forecasting** is rare in consumer finance apps
+- **Voice-first interaction** for accessibility and convenience
+- **Privacy-focused** manual entry approach
+- **Minimal, focused** feature set vs. bloated competitors
 
 ## 🚀 Features
 
 ### Core Functionality
 - **Cash Flow Tracking**: Record income and expenses with categories
 - **Auto-Save Editing**: Click any cell to edit inline with automatic saving
-- **Financial Dashboard**: Visual overview of your financial health
+- **Forward-Looking Insights**: Focus on cash flow forecasting vs. past spending analysis
 - **Category Management**: Organize transactions by type and purpose
 - **Data Export**: Export financial data in multiple formats
 
@@ -101,12 +124,19 @@ The application uses SQLite and stores data in `C:\Users\[username]\Documents\Mo
 - [x] Financial dashboard and reporting
 - [x] Category management
 
-### Phase 3: Advanced Features 📋
+### Phase 3: AI-Powered Features 📋
+- [ ] **AI Cash Flow Prediction**: Historical data analysis for future forecasting
+- [ ] **Voice Input**: Speech recognition for hands-free expense logging
+- [ ] **Receipt Photo Capture**: AI parsing of receipt images
+- [ ] **Smart Alerts**: Upcoming low balance period notifications
+- [ ] **Conversational Interface**: Voice queries for cash flow insights
+- [ ] **Recurring Bills Integration**: Predictable expense automation
+
+### Phase 4: Advanced Features 📋
 - [ ] Data visualization charts
-- [ ] Budget planning and alerts
 - [ ] Goal tracking
 - [ ] User authentication
-- [ ] Mobile app
+- [ ] Mobile PWA optimization
 
 ## 🤝 Contributing
 

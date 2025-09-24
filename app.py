@@ -25,6 +25,12 @@ with app.app_context():
 
 
 @app.route('/', methods=['GET'])
+def index():
+    """Redirect to cashflow page as main interface"""
+    from flask import redirect, url_for
+    return redirect(url_for('list_entries'))
+
+@app.route('/dashboard', methods=['GET'])
 def dashboard():
     """Financial dashboard with summary and recent transactions"""
     # Get current month and year

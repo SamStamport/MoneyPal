@@ -18,13 +18,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Currency formatting for amount fields
   - ESC key to cancel editing and revert changes
   - Network status indicator (online/offline)
+- **Cashflow-First Interface**: Root URL redirects to transaction management page
 - Complete cash flow CRUD operations (create, read, update, delete)
 - Financial dashboard with monthly summaries and category breakdowns
 - Sample data generation script for testing
 - Project files overview documentation
 - Database storage in Documents folder for persistence
 
+### Planned - AI-Powered Cash Flow Forecasting
+- **Core Vision**: Shift from spending analysis to cash flow prediction
+- **AI Forecasting Engine**: Use historical data to predict future cash flow
+- **Voice Interface**: Speech recognition for natural expense entry
+- **Receipt AI**: Photo capture with automatic data extraction
+- **Smart Alerts**: Proactive notifications for upcoming low balance periods
+- **Conversational Queries**: Voice-activated financial insights
+- **Privacy-First Design**: Manual entry approach for user control
+
 ### Changed
+- **Project Vision**: Evolved from traditional expense tracking to cash flow forecasting PWA
+- **Interface Focus**: Cashflow page as primary interface instead of dashboard
 - Removed ideas capture functionality to focus on financial tracking
 - Updated database path to use Documents folder
 - Streamlined project structure
