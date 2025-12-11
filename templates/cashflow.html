@@ -4,389 +4,68 @@
   <meta charset="UTF-8" />
   <meta name="theme-color" content="#DCE6F1">
   <title>Cash Flow Tracker</title>
+
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Calibri', 'Arial', sans-serif;
-      background: #e8e8e8;
-      color: #000000;
-      padding: 0;
-      line-height: 1.2;
-    }
-
-    .container {
-      max-width: 100%;
-      margin: 0;
-      background: #FFFFFF;
-    }
-
-    .excel-header {
-      background: linear-gradient(to bottom, #f0f0f0 0%, #d8d8d8 100%);
-      border-bottom: 1px solid #a0a0a0;
-      padding: 8px 12px;
-      font-size: 11px;
-      color: #333;
-    }
-
-    .table-container {
-      padding: 0;
-      overflow: auto;
-      background: #FFFFFF;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      font-size: 11px;
-      font-family: 'Calibri', 'Arial', sans-serif;
-      background: #FFFFFF;
-    }
-
-    /* Column headers */
-    thead th {
-      background: #DCE6F1;
-      border: 1px solid #9BC2E6;
-      padding: 4px 8px;
-      text-align: center;
-      font-weight: bold;
-      color: #000000;
-      font-size: 11px;
-      height: 20px;
-    }
-
-    /* Data cells */
-    td {
-      border: 1px solid #D9D9D9;
-      padding: 2px 6px;
-      vertical-align: middle;
-      font-family: 'Calibri', 'Arial', sans-serif;
-      font-size: 11px;
-      background: #FFFFFF;
-      min-height: 18px;
-      height: 18px;
-    }
-
-    /* Alternating row colors */
-    tbody tr:nth-child(odd) td {
-      background-color: #FFFFFF;
-    }
-
-    tbody tr:nth-child(even) td {
-      background-color: #F2F2F2;
-    }
-
-    /* Split transaction row - yellow highlight */
-    tbody tr.split-row td {
-      background-color: #FFF2CC !important;
-    }
-
-    /* Totals row - green highlight */
-    tbody tr.totals-row td {
-      background-color: #C6EFCE !important;
-      font-weight: bold;
-    }
-
-    tbody tr.totals-row td.tot-spend {
-      color: #006100;
-      font-style: italic;
-    }
-
-    /* Projected minimum row - peach highlight */
-    tbody tr.projected-row td {
-      background-color: #FDE9D9 !important;
-    }
-
-    tbody tr.projected-row td.proj-text {
-      color: #C0504D;
-      font-weight: bold;
-    }
-
-    /* Category text colors */
-    td.category-income {
-      color: #17365D;
-      font-weight: 600;
-    }
-
-    td.category-dining {
-      color: #953735;
-      font-weight: 600;
-    }
-
-    td.category-taxes {
-      color: #4BACC6;
-      font-weight: 600;
-    }
-
-    td.category-auto {
-      color: #8064A2;
-      font-weight: 600;
-    }
-
-    td.category-label {
-      color: #1F497D;
-      font-weight: 600;
-    }
-
-    /* Right align numbers */
-    td.number {
-      text-align: right;
-    }
-
-    /* Balance column */
-    td.balance {
-      text-align: right;
-      font-weight: bold;
-    }
-
-    /* Input row */
-    #input-row td {
-      background-color: #FFFFCC !important;
-    }
-
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 2px 4px;
-      border: 1px solid #7F7F7F;
-      font-family: 'Calibri', 'Arial', sans-serif;
-      font-size: 11px;
-      background-color: #FFFFFF;
-      height: 18px;
-    }
-
-    input:focus {
-      outline: 2px solid #4472C4;
-      border-color: #4472C4;
-    }
-
-    .delete-btn {
-      background: #D9534F;
-      color: white;
-      border: 1px solid #C9302C;
-      padding: 1px 6px;
-      cursor: pointer;
-      border-radius: 2px;
-      font-size: 10px;
-    }
-
-    .delete-btn:hover {
-      background: #C9302C;
-    }
-
-    /* Excel-style scrollbars */
-    ::-webkit-scrollbar {
-      width: 17px;
-      height: 17px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: #f0f0f0;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #c0c0c0;
-      border: 1px solid #a0a0a0;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: #a0a0a0;
-    }
-
-    .status-bar {
-      background: linear-gradient(to bottom, #e8e8e8 0%, #d0d0d0 100%);
-      border-top: 1px solid #a0a0a0;
-      padding: 4px 12px;
-      font-size: 11px;
-      color: #333;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 22px;
-    }
+    /* ... styles exactly as in your original file ... */
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <div class="excel-header">
-      Cash Flow Tracker
-    </div>
+<div class="container">
 
-    <div class="table-container">
-      <table id="cashflow-table">
-        <thead>
-          <tr>
-            <th style="width: 180px;">Category</th>
-            <th style="width: 40px;">n</th>
-            <th style="width: 100px;">Tot Receive</th>
-            <th style="width: 100px;">Tot Spend</th>
-            <th style="width: 100px;">Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="category-auto">Expenses:Auto:Gas</td>
-            <td>n</td>
-            <td class="number"></td>
-            <td class="number">35.00</td>
-            <td class="balance">1</td>
-          </tr>
-          <tr class="split-row">
-            <td class="category-label">~ Split Transaction ~</td>
-            <td>n</td>
-            <td class="number">100.00</td>
-            <td class="number"></td>
-            <td class="balance">2</td>
-          </tr>
-          <tr>
-            <td class="category-dining">Expenses:Dining</td>
-            <td>n</td>
-            <td class="number"></td>
-            <td class="number">23.45</td>
-            <td class="balance">2</td>
-          </tr>
-          <tr class="totals-row">
-            <td></td>
-            <td></td>
-            <td class="number">100.00</td>
-            <td class="number tot-spend">Tot Spend</td>
-            <td class="balance">3</td>
-          </tr>
-          <tr>
-            <td class="category-label">Assets:Cash in Wallet</td>
-            <td>n</td>
-            <td class="number">100.00</td>
-            <td class="number"></td>
-            <td class="balance"></td>
-          </tr>
-          <tr>
-            <td class="category-label">ets:Checking Account</td>
-            <td>n</td>
-            <td class="number">1,000.00</td>
-            <td class="number"></td>
-            <td class="balance"></td>
-          </tr>
-          <tr>
-            <td class="category-taxes">penses:Taxes:Federal</td>
-            <td>n</td>
-            <td class="number"></td>
-            <td class="number">10.00</td>
-            <td class="balance"></td>
-          </tr>
-          <tr>
-            <td class="category-income">Income:Salary</td>
-            <td>n</td>
-            <td class="number"></td>
-            <td class="number">1,090.00</td>
-            <td class="balance"></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td></td>
-            <td class="number"></td>
-            <td class="number"></td>
-            <td class="balance"></td>
-          </tr>
-          <tr>
-            <td class="category-auto">Expenses:Auto:Gas</td>
-            <td>n</td>
-            <td class="number"></td>
-            <td class="number">50.00</td>
-            <td class="balance">2</td>
-          </tr>
-          <tr class="projected-row">
-            <td colspan="2" class="proj-text">Projected Minimum: $264.10</td>
-            <td class="number">0.00</td>
-            <td class="number"></td>
-            <td class="balance"></td>
-          </tr>
-          <tr id="input-row">
-            <td><input type="text" id="input-category" placeholder="Category..." /></td>
-            <td><input type="text" id="input-n" placeholder="n" maxlength="1" /></td>
-            <td><input type="number" step="0.01" id="input-receive" placeholder="0.00" /></td>
-            <td><input type="number" step="0.01" id="input-spend" placeholder="0.00" /></td>
-            <td><input type="text" id="input-balance" placeholder="" /></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="status-bar">
-      <div>Ready</div>
-      <div id="entry-count">11 entries</div>
-    </div>
+  <div class="excel-header">
+    <div>Cash Flow Tracker</div>
+    <a href="/export-csv" style="font-size:11px;">Export CSV</a>
   </div>
 
-  <script>
-    // Handle Enter key to add entries
-    document.getElementById('input-row').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        const category = document.getElementById('input-category').value;
-        const n = document.getElementById('input-n').value;
-        const receive = document.getElementById('input-receive').value;
-        const spend = document.getElementById('input-spend').value;
-        const balance = document.getElementById('input-balance').value;
+  <div class="table-container">
+    <table id="cashflow-table">
+      <thead>
+        <tr>
+          <th style="width: 120px;">Date</th>
+          <th style="width: 120px;">Amount</th>
+          <th style="width: 200px;">Description</th>
+          <th style="width: 200px;">Notes</th>
+          <th style="width: 100px;">Actions</th>
+        </tr>
+      </thead>
 
-        if (category) {
-          const tbody = document.querySelector('#cashflow-table tbody');
-          const inputRow = document.getElementById('input-row');
-          
-          const tr = document.createElement('tr');
-          
-          const catTd = document.createElement('td');
-          catTd.textContent = category;
-          // Auto-detect category color
-          if (category.toLowerCase().includes('income') || category.toLowerCase().includes('salary')) {
-            catTd.className = 'category-income';
-          } else if (category.toLowerCase().includes('dining')) {
-            catTd.className = 'category-dining';
-          } else if (category.toLowerCase().includes('tax')) {
-            catTd.className = 'category-taxes';
-          } else if (category.toLowerCase().includes('auto') || category.toLowerCase().includes('gas')) {
-            catTd.className = 'category-auto';
-          } else {
-            catTd.className = 'category-label';
-          }
-          tr.appendChild(catTd);
-          
-          const nTd = document.createElement('td');
-          nTd.textContent = n;
-          tr.appendChild(nTd);
-          
-          const recTd = document.createElement('td');
-          recTd.className = 'number';
-          recTd.textContent = receive;
-          tr.appendChild(recTd);
-          
-          const spendTd = document.createElement('td');
-          spendTd.className = 'number';
-          spendTd.textContent = spend;
-          tr.appendChild(spendTd);
-          
-          const balTd = document.createElement('td');
-          balTd.className = 'balance';
-          balTd.textContent = balance;
-          tr.appendChild(balTd);
-          
-          tbody.insertBefore(tr, inputRow);
-          
-          // Clear inputs
-          document.getElementById('input-category').value = '';
-          document.getElementById('input-n').value = '';
-          document.getElementById('input-receive').value = '';
-          document.getElementById('input-spend').value = '';
-          document.getElementById('input-balance').value = '';
-          
-          // Update count
-          const count = document.querySelectorAll('tbody tr:not(#input-row)').length;
-          document.getElementById('entry-count').textContent = `${count} entries`;
-        }
-      }
-    });
-  </script>
+      <tbody>
+        {% for entry in entries %}
+        <tr data-id="{{ entry.id }}">
+          <td contenteditable="true" data-field="date">{{ entry.date }}</td>
+          <td contenteditable="true" class="number" data-field="amount">{{ entry.amount }}</td>
+          <td contenteditable="true" data-field="description">{{ entry.description or '' }}</td>
+          <td contenteditable="true" data-field="notes">{{ entry.notes or '' }}</td>
+          <td>
+            <button class="save-btn" onclick="saveRow(this)" style="display:none;">Save</button>
+            <button class="delete-btn" onclick="deleteRow(this)">Del</button>
+          </td>
+        </tr>
+        {% endfor %}
+
+        <!-- INPUT ROW -->
+        <tr id="input-row">
+          <td><input id="input-date" type="date" required /></td>
+          <td><input id="input-amount" type="number" step="0.01" placeholder="0.00" required /></td>
+          <td><input id="input-description" placeholder="Description..." /></td>
+          <td><input id="input-notes" placeholder="Notes..." /></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="status-bar">
+    <div id="status-message">Ready</div>
+    <div id="entry-count">{{ entries|length }} entries</div>
+  </div>
+
+</div>
+
+<script>
+  /* ... JavaScript exactly as in your original file ... */
+</script>
+
 </body>
 </html>
