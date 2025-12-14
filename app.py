@@ -58,7 +58,7 @@ def dashboard():
 
 @app.route('/cashflow', methods=['GET'])
 def list_entries():
-    entries = CashFlow.query.order_by(CashFlow.date).all()
+    entries = CashFlow.query.order_by(CashFlow.date.desc()).all()
     return render_template('cashflow.html', entries=entries)
 
 
