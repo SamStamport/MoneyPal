@@ -3,179 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="theme-color" content="#F2EBDD">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <title>Cash Flow Ledger</title>
 
   <style>
-    :root {
-      color-scheme: light only;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    /* --- Page (desk surface) --- */
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Segoe UI, Tahoma, sans-serif;
       background: #9CAF88;
       padding: 24px;
-      color: #000000;
-      line-height: 1.45;
     }
-
-    /* --- Ledger page --- */
     .container {
       max-width: 1200px;
-      margin: 0 auto;
-      background: #FFFFFF;
+      margin: auto;
+      background: #fff;
       border: 1px solid #9E9E9E;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
-
-    /* --- Header (binding/leather) --- */
     .excel-header {
       background: #4A6741;
-      color: #FFFFFF;
-      padding: 14px 20px;
+      color: #fff;
+      padding: 14px;
       font-weight: 600;
-      letter-spacing: 0.3px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      text-align: center;
       position: relative;
     }
-
-    .excel-header .export-btn {
+    .export-btn {
       position: absolute;
       right: 20px;
-      color: #FFFFFF;
+      top: 14px;
+      color: #fff;
+      border: 1px solid #fff;
+      padding: 4px 10px;
       text-decoration: none;
       font-size: 11px;
-      padding: 6px 12px;
-      border: 1px solid #FFFFFF;
-      border-radius: 4px;
-      background: transparent;
     }
-
-    .excel-header .export-btn:hover {
-      background: rgba(255,255,255,0.1);
-    }
-
-    /* --- Table --- */
-    .table-container {
-      overflow-x: auto;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 11.5pt;
-      font-variant-numeric: tabular-nums;
     }
-
+    th, td {
+      border: 1px solid #C0C0C0;
+      padding: 6px 8px;
+    }
     thead {
       background: #4A6741;
-      color: #FFFFFF;
-      position: sticky;
-      top: 0;
+      color: #fff;
     }
-
-    th {
-      padding: 8px;
-      text-align: left;
-      font-weight: 600;
-      border: 1px solid #3A5231;
-    }
-
-    /* --- Ledger striping (very subtle) --- */
-    tbody tr:nth-child(odd):not(#input-row) {
-      background: #A8CC9E;
-    }
-
-    tbody tr:nth-child(even):not(#input-row) {
-      background: #E8F5C4;
-    }
-
-    tbody tr:hover:not(#input-row) {
-      background: #FFD018;
-    }
-
-    td {
-      padding: 6px 8px;
-      border: 1px solid #C0C0C0;
-      background: transparent;
-      color: #000000;
-    }
-
-    td[contenteditable="true"]:focus {
-      outline: 2px solid #4A6741;
-      background: #FFD018;
-    }
-
-    .number {
-      text-align: right;
-      font-family: 'Courier New', monospace;
-    }
-
-    /* --- Input row (receipt tone) --- */
-    #input-row {
-      background: #FFD018;
-    }
-
-    #input-row input {
-      width: 100%;
-      padding: 4px;
-      border: 1px solid #C0C0C0;
-      font-size: 11pt;
-      background: #FFF8E1;
-      color: #000000;
-    }
-
-    /* --- Buttons (ink, not UI chrome) --- */
-    button {
-      padding: 4px 10px;
-      margin: 2px;
-      border: 1px solid #9E9E9E;
-      background: #F5F5F5;
-      cursor: pointer;
-      font-size: 10pt;
-      border-radius: 3px;
-      color: #000000;
-    }
-
-    button:hover {
-      background: #E5E5E5;
-    }
-
-    .delete-btn {
-      color: #B30000;
-      background: #C8E6C9;
-    }
-
-    .delete-btn:hover {
-      background: #B8D6B9;
-    }
-
-    .save-btn {
-      color: #4A6741;
-      font-weight: bold;
-    }
-
-    /* --- Status bar --- */
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 20px;
-      background: #8B9A6B;
-      border-top: 1px solid #C0C0C0;
-      font-size: 10pt;
-      color: #404040;
-    }
+    tbody tr:nth-child(odd):not(#input-row) { background: #A8CC9E; }
+    tbody tr:nth-child(even):not(#input-row) { background: #E8F5C4; }
+    .number { text-align: right; font-family: Courier New, monospace; }
+    #input-row { background: #FFD018; }
+    .save-btn { display:none; }
   </style>
 </head>
 
@@ -183,173 +60,77 @@
 <div class="container">
 
   <div class="excel-header">
-    <div>Cash Flow Ledger</div>
+    Cash Flow Ledger
     <a href="/export-csv" class="export-btn">Export CSV</a>
   </div>
 
-  <div class="table-container">
-    <table id="cashflow-table">
-      <thead>
-        <tr>
-          <th style="width: 120px;">Date</th>
-          <th style="width: 120px;">Amount</th>
-          <th style="width: 200px;">Description</th>
-          <th style="width: 200px;">Notes</th>
-          <th style="width: 100px;">Actions</th>
-        </tr>
-      </thead>
+  <table id="cashflow-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Amount</th>
+        <th>Running Balance</th>
+        <th>Description</th>
+        <th>Notes</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
 
-      <tbody>
-        <tr id="input-row">
-          <td><input id="input-date" type="date" required /></td>
-          <td><input id="input-amount" type="number" step="0.01" required /></td>
-          <td><input id="input-description" /></td>
-          <td><input id="input-notes" /></td>
-          <td></td>
-        </tr>
+      <tr id="input-row">
+        <td><input id="input-date" type="date"></td>
+        <td><input id="input-amount" type="number" step="0.01"></td>
+        <td></td>
+        <td><input id="input-description"></td>
+        <td><input id="input-notes"></td>
+        <td></td>
+      </tr>
 
-        {% for entry in entries %}
-        <tr data-id="{{ entry.id }}">
-          <td contenteditable="true" data-field="date">{{ entry.date.strftime('%Y-%m-%d') }}</td>
-          <td contenteditable="true" class="number" data-field="amount">{{ "%.2f"|format(entry.amount) }}</td>
-          <td contenteditable="true" data-field="description">{{ entry.description or '' }}</td>
-          <td contenteditable="true" data-field="notes">{{ entry.notes or '' }}</td>
-          <td>
-            <button class="save-btn" onclick="saveRow(this)" style="display:none;">Save</button>
-            <button class="delete-btn" onclick="deleteRow(this)">Del</button>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+      {% for entry in entries %}
+      <tr data-id="{{ entry.id }}">
+        <td contenteditable="true" data-field="date">{{ entry.date.strftime('%Y-%m-%d') }}</td>
+        <td contenteditable="true" class="number" data-field="amount">{{ "%.2f"|format(entry.amount) }}</td>
+        <td class="number balance-cell">0.00</td>
+        <td contenteditable="true" data-field="description">{{ entry.description or '' }}</td>
+        <td contenteditable="true" data-field="notes">{{ entry.notes or '' }}</td>
+        <td>
+          <button class="save-btn" onclick="saveRow(this)">Save</button>
+          <button onclick="deleteRow(this)">Del</button>
+        </td>
+      </tr>
+      {% endfor %}
 
-  <div class="status-bar">
-    <div id="status-message">Ready</div>
-    <div id="entry-count">{{ entries|length }} entries</div>
-  </div>
+    </tbody>
+  </table>
 
 </div>
 
 <script>
-  const modifiedCells = new WeakMap();
+document.getElementById('input-date').valueAsDate = new Date();
 
-  document.addEventListener('input', function(e) {
-    if (e.target.hasAttribute('contenteditable')) {
-      const row = e.target.closest('tr');
-      const saveBtn = row.querySelector('.save-btn');
-      if (saveBtn) {
-        saveBtn.style.display = 'inline-block';
-        modifiedCells.set(row, true);
-      }
-    }
-  });
+calculateRunningBalance();
 
-  document.getElementById('input-row').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addEntry();
-    }
-  });
+function calculateRunningBalance() {
+  const tbody = document.querySelector('#cashflow-table tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr:not(#input-row)'));
 
-  document.getElementById('input-date').valueAsDate = new Date();
-  
-  // Clear status message after 3 seconds
-  setInterval(() => {
-    const statusMsg = document.getElementById('status-message');
-    if (statusMsg.textContent !== 'Ready') {
-      statusMsg.textContent = 'Ready';
-    }
-  }, 3000);
+  // Sort NEWEST -> OLDEST (oldest last)
+  rows.sort((a, b) =>
+    new Date(b.querySelector('[data-field="date"]').textContent) -
+    new Date(a.querySelector('[data-field="date"]').textContent)
+  );
 
-  function saveRow(button) {
-    const row = button.closest('tr');
-    const id = row.dataset.id;
-    
-    const data = {
-      date: row.querySelector('[data-field="date"]').textContent,
-      amount: row.querySelector('[data-field="amount"]').textContent,
-      description: row.querySelector('[data-field="description"]').textContent,
-      notes: row.querySelector('[data-field="notes"]').textContent
-    };
-    
-    fetch(`/update/${id}`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-      if (result.success) {
-        button.style.display = 'none';
-        document.getElementById('status-message').textContent = 'Saved';
-      } else {
-        alert('Error saving: ' + result.error);
-      }
-    })
-    .catch(error => {
-      alert('Error: ' + error);
-    });
+  // Calculate running balance from bottom (oldest) upward
+  let running = 0;
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const amt = parseFloat(rows[i].querySelector('[data-field="amount"]').textContent) || 0;
+    running += amt;
+    rows[i].querySelector('.balance-cell').textContent = running.toFixed(2);
   }
 
-  function deleteRow(button) {
-    const row = button.closest('tr');
-    const id = row.dataset.id;
-    if (confirm('Delete this entry?')) {
-      fetch(`/delete/${id}`, {
-        method: 'DELETE'
-      })
-      .then(response => response.json())
-      .then(result => {
-        if (result.success) {
-          row.remove();
-          updateEntryCount();
-          document.getElementById('status-message').textContent = 'Deleted';
-        } else {
-          alert('Error deleting: ' + result.error);
-        }
-      })
-      .catch(error => {
-        alert('Error: ' + error);
-      });
-    }
-  }
-
-  function addEntry() {
-    const date = document.getElementById('input-date').value;
-    const amount = document.getElementById('input-amount').value;
-    const description = document.getElementById('input-description').value;
-    const notes = document.getElementById('input-notes').value;
-    
-    if (!date || !amount) {
-      alert('Date and amount are required');
-      return;
-    }
-    
-    const data = { date, amount, description, notes };
-    
-    fetch('/add-ajax', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-      if (result.id) {
-        location.reload(); // Refresh to show new entry
-      } else {
-        alert('Error adding entry: ' + result.error);
-      }
-    })
-    .catch(error => {
-      alert('Error: ' + error);
-    });
-  }
-  
-  function updateEntryCount() {
-    const count = document.querySelectorAll('tbody tr:not(#input-row)').length;
-    document.getElementById('entry-count').textContent = `${count} entries`;
-  }
+  // Reinsert rows in newest->oldest order
+  rows.forEach(row => tbody.appendChild(row));
+}
 </script>
 
 </body>
