@@ -58,8 +58,14 @@ def dashboard():
 
 @app.route('/cashflow', methods=['GET'])
 def list_entries():
-    entries = CashFlow.query.order_by(CashFlow.date.desc()).all()
+    entries = CashFlow.query.filter_by(account_type='bank').order_by(CashFlow.date.desc()).all()
     return render_template('cashflow.html', entries=entries)
+
+
+@app.route('/secured-visa', methods=['GET'])
+def secured_visa():
+    entries = CashFlow.query.filter_by(account_type='secured_visa').order_by(CashFlow.date.desc()).all()
+    return render_template('secured_visa.html', entries=entries)
 
 
 @app.route('/add-ajax', methods=['POST'])
@@ -70,12 +76,14 @@ def add_entry_ajax():
         amount = float(data['amount'])
         description = data.get('description', '')
         notes = data.get('notes', '')
+        account_type = data.get('account_type', 'bank')
 
         new_entry = CashFlow(
             date=date_obj,
             amount=amount,
             description=description,
-            notes=notes
+            notes=notes,
+            account_type=account_type
         )
         db.session.add(new_entry)
         db.session.commit()
