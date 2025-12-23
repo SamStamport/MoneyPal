@@ -31,37 +31,13 @@ def index():
 @app.route('/cashflow', methods=['GET'])
 def list_entries():
     entries = CashFlow.query.filter_by(account_type=ACCOUNT_TYPE_BANK).order_by(CashFlow.date.desc()).all()
-    
-    # Calculate running balance
-    running_balance = 0
-    entries_with_balance = []
-    for entry in reversed(entries):  # Start from oldest
-        running_balance += entry.amount
-        entries_with_balance.append({
-            'entry': entry,
-            'balance': running_balance
-        })
-    
-    entries_with_balance.reverse()  # Back to newest first
-    return render_template('cashflow.html', entries_with_balance=entries_with_balance)
+    return render_template('cashflow.html', entries=entries)
 
 
 @app.route('/secured-visa', methods=['GET'])
 def secured_visa():
     entries = CashFlow.query.filter_by(account_type=ACCOUNT_TYPE_SECURED_VISA).order_by(CashFlow.date.desc()).all()
-    
-    # Calculate running balance
-    running_balance = 0
-    entries_with_balance = []
-    for entry in reversed(entries):  # Start from oldest
-        running_balance += entry.amount
-        entries_with_balance.append({
-            'entry': entry,
-            'balance': running_balance
-        })
-    
-    entries_with_balance.reverse()  # Back to newest first
-    return render_template('secured_visa.html', entries_with_balance=entries_with_balance)
+    return render_template('secured_visa.html', entries=entries)
 
 
 @app.route('/add-ajax', methods=['POST'])
