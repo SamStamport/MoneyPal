@@ -128,13 +128,13 @@
         <td></td>
       </tr>
 
-      {% for entry in entries %}
-      <tr data-id="{{ entry.id }}">
-        <td contenteditable="true" data-field="date" data-original="{{ entry.date.strftime('%Y-%m-%d') }}">{{ entry.date.strftime('%Y-%m-%d') }}</td>
-        <td contenteditable="true" class="number" data-field="amount" data-original="{{ '%.2f'|format(entry.amount) }}">{{ "%.2f"|format(entry.amount) }}</td>
-        <td class="number balance-cell">0.00</td>
-        <td contenteditable="true" data-field="description" data-original="{{ entry.description or '' }}">{{ entry.description or '' }}</td>
-        <td contenteditable="true" data-field="notes" data-original="{{ entry.notes or '' }}">{{ entry.notes or '' }}</td>
+      {% for item in entries_with_balance %}
+      <tr data-id="{{ item.entry.id }}">
+        <td contenteditable="true" data-field="date" data-original="{{ item.entry.date.strftime('%Y-%m-%d') }}">{{ item.entry.date.strftime('%Y-%m-%d') }}</td>
+        <td contenteditable="true" class="number" data-field="amount" data-original="{{ '%.2f'|format(item.entry.amount) }}">{{ "%.2f"|format(item.entry.amount) }}</td>
+        <td class="number balance-cell">{{ "%.2f"|format(item.balance) }}</td>
+        <td contenteditable="true" data-field="description" data-original="{{ item.entry.description or '' }}">{{ item.entry.description or '' }}</td>
+        <td contenteditable="true" data-field="notes" data-original="{{ item.entry.notes or '' }}">{{ item.entry.notes or '' }}</td>
         <td>
           <button class="save-btn" style="display: none;" onclick="saveRow(this)">Save</button>
           <button class="del-btn" onclick="deleteRow(this)">Del</button>
@@ -149,8 +149,6 @@
 
 <script>
 document.getElementById('input-date').valueAsDate = new Date();
-
-calculateRunningBalance();
 
 // Add entry on Enter key
 document.getElementById('input-row').addEventListener('keydown', function(e) {
@@ -294,27 +292,6 @@ function deleteRow(button) {
     row.classList.remove('loading');
     alert('Error deleting entry: ' + error.message);
   });
-}
-function calculateRunningBalance() {
-  const tbody = document.querySelector('#cashflow-table tbody');
-  const rows = Array.from(tbody.querySelectorAll('tr:not(#input-row)'));
-
-  // Sort NEWEST -> OLDEST (oldest last)
-  rows.sort((a, b) =>
-    new Date(b.querySelector('[data-field="date"]').textContent) -
-    new Date(a.querySelector('[data-field="date"]').textContent)
-  );
-
-  // Calculate running balance from bottom (oldest) upward
-  let running = 0;
-  for (let i = rows.length - 1; i >= 0; i--) {
-    const amt = parseFloat(rows[i].querySelector('[data-field="amount"]').textContent) || 0;
-    running += amt;
-    rows[i].querySelector('.balance-cell').textContent = running.toFixed(2);
-  }
-
-  // Reinsert rows in newest->oldest order
-  rows.forEach(row => tbody.appendChild(row));
 }
 </script>
 

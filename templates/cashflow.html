@@ -36,6 +36,11 @@
       padding: 4px 10px;
       text-decoration: none;
       font-size: 11px;
+      cursor: pointer;
+      background: transparent;
+    }
+    .export-btn:hover, .account-btn:hover {
+      background: rgba(255,255,255,0.1);
     }
     table {
       width: 100%;
@@ -54,7 +59,39 @@
     tbody tr:nth-child(even):not(#input-row) { background: #E8F5C4; }
     .number { text-align: right; font-family: Courier New, monospace; }
     #input-row { background: #DCE6F1; }
-    .save-btn { display:none; }
+    #input-row input {
+      width: 100%;
+      border: 1px solid #999;
+      padding: 4px;
+      font-size: 11pt;
+    }
+    .save-btn, .del-btn {
+      padding: 2px 8px;
+      font-size: 10px;
+      cursor: pointer;
+      margin-right: 4px;
+    }
+    .save-btn {
+      background: #4A6741;
+      color: white;
+      border: 1px solid #3a5331;
+    }
+    .del-btn {
+      background: #d32f2f;
+      color: white;
+      border: 1px solid #b71c1c;
+    }
+    .save-btn:hover { background: #5a7751; }
+    .del-btn:hover { background: #e53935; }
+    .save-btn[style*="display: none"] { display: none !important; }
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    [contenteditable="true"]:focus {
+      outline: 2px solid #4A6741;
+      background: #fff9c4 !important;
+    }
   </style>
 </head>
 
@@ -65,7 +102,7 @@
     Cash Flow Ledger - Bank Account
     <div class="header-buttons">
       <a href="/secured-visa" class="account-btn">Secured Visa</a>
-      <a href="/export-csv" class="export-btn">Export CSV</a>
+      <a href="/export-csv?account_type=bank" class="export-btn">Export CSV</a>
     </div>
   </div>
 
@@ -84,23 +121,23 @@
 
       <tr id="input-row">
         <td><input id="input-date" type="date"></td>
-        <td><input id="input-amount" type="number" step="0.01"></td>
+        <td><input id="input-amount" type="number" step="0.01" placeholder="0.00"></td>
         <td></td>
-        <td><input id="input-description"></td>
-        <td><input id="input-notes"></td>
+        <td><input id="input-description" placeholder="Description"></td>
+        <td><input id="input-notes" placeholder="Notes"></td>
         <td></td>
       </tr>
 
-      {% for entry in entries %}
-      <tr data-id="{{ entry.id }}">
-        <td contenteditable="true" data-field="date">{{ entry.date.strftime('%Y-%m-%d') }}</td>
-        <td contenteditable="true" class="number" data-field="amount">{{ "%.2f"|format(entry.amount) }}</td>
-        <td class="number balance-cell">0.00</td>
-        <td contenteditable="true" data-field="description">{{ entry.description or '' }}</td>
-        <td contenteditable="true" data-field="notes">{{ entry.notes or '' }}</td>
+      {% for item in entries_with_balance %}
+      <tr data-id="{{ item.entry.id }}">
+        <td contenteditable="true" data-field="date" data-original="{{ item.entry.date.strftime('%Y-%m-%d') }}">{{ item.entry.date.strftime('%Y-%m-%d') }}</td>
+        <td contenteditable="true" class="number" data-field="amount" data-original="{{ '%.2f'|format(item.entry.amount) }}">{{ "%.2f"|format(item.entry.amount) }}</td>
+        <td class="number balance-cell">{{ "%.2f"|format(item.balance) }}</td>
+        <td contenteditable="true" data-field="description" data-original="{{ item.entry.description or '' }}">{{ item.entry.description or '' }}</td>
+        <td contenteditable="true" data-field="notes" data-original="{{ item.entry.notes or '' }}">{{ item.entry.notes or '' }}</td>
         <td>
-          <button class="save-btn" onclick="saveRow(this)">Save</button>
-          <button onclick="deleteRow(this)">Del</button>
+          <button class="save-btn" style="display: none;" onclick="saveRow(this)">Save</button>
+          <button class="del-btn" onclick="deleteRow(this)">Del</button>
         </td>
       </tr>
       {% endfor %}
@@ -113,13 +150,35 @@
 <script>
 document.getElementById('input-date').valueAsDate = new Date();
 
-calculateRunningBalance();
-
+// Add entry on Enter key
 document.getElementById('input-row').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') {
     e.preventDefault();
     addEntry();
   }
+});
+
+// Detect changes in editable cells
+document.querySelectorAll('tbody tr:not(#input-row)').forEach(row => {
+  row.querySelectorAll('[contenteditable="true"]').forEach(cell => {
+    cell.addEventListener('input', function() {
+      const saveBtn = this.closest('tr').querySelector('.save-btn');
+      const original = this.getAttribute('data-original');
+      const current = this.textContent.trim();
+      
+      if (current !== original) {
+        saveBtn.style.display = 'inline-block';
+      } else {
+        // Check if any other cell in this row has changes
+        const hasChanges = Array.from(this.closest('tr').querySelectorAll('[contenteditable="true"]'))
+          .some(c => c.textContent.trim() !== c.getAttribute('data-original'));
+        
+        if (!hasChanges) {
+          saveBtn.style.display = 'none';
+        }
+      }
+    });
+  });
 });
 
 function addEntry() {
@@ -135,44 +194,104 @@ function addEntry() {
   
   const data = { date, amount, description, notes, account_type: 'bank' };
   
+  document.body.classList.add('loading');
+  
   fetch('/add-ajax', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(data)
   })
-  .then(response => response.json())
-  .then(result => {
-    if (result.id) {
-      location.reload();
-    } else {
-      alert('Error adding entry: ' + result.error);
+  .then(response => {
+    if (!response.ok) {
+      return response.json().then(err => { throw new Error(err.error || 'Unknown error'); });
     }
+    return response.json();
+  })
+  .then(result => {
+    location.reload();
   })
   .catch(error => {
-    alert('Error: ' + error);
+    document.body.classList.remove('loading');
+    alert('Error adding entry: ' + error.message);
   });
 }
 
-function calculateRunningBalance() {
-  const tbody = document.querySelector('#cashflow-table tbody');
-  const rows = Array.from(tbody.querySelectorAll('tr:not(#input-row)'));
+function saveRow(button) {
+  const row = button.closest('tr');
+  const entryId = row.getAttribute('data-id');
+  
+  const dateCell = row.querySelector('[data-field="date"]');
+  const amountCell = row.querySelector('[data-field="amount"]');
+  const descCell = row.querySelector('[data-field="description"]');
+  const notesCell = row.querySelector('[data-field="notes"]');
+  
+  const data = {
+    date: dateCell.textContent.trim(),
+    amount: amountCell.textContent.trim(),
+    description: descCell.textContent.trim(),
+    notes: notesCell.textContent.trim()
+  };
+  
+  row.classList.add('loading');
+  
+  fetch(`/update/${entryId}`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  })
+  .then(response => {
+    if (!response.ok) {
+      return response.json().then(err => { throw new Error(err.error || 'Unknown error'); });
+    }
+    return response.json();
+  })
+  .then(result => {
+    // Update original values
+    dateCell.setAttribute('data-original', data.date);
+    amountCell.setAttribute('data-original', parseFloat(data.amount).toFixed(2));
+    descCell.setAttribute('data-original', data.description);
+    notesCell.setAttribute('data-original', data.notes);
+    
+    // Hide save button
+    button.style.display = 'none';
+    row.classList.remove('loading');
+    
+    // Reload to recalculate balances
+    location.reload();
+  })
+  .catch(error => {
+    row.classList.remove('loading');
+    alert('Error saving changes: ' + error.message);
+  });
+}
 
-  // Sort NEWEST -> OLDEST (oldest last)
-  rows.sort((a, b) =>
-    new Date(b.querySelector('[data-field="date"]').textContent) -
-    new Date(a.querySelector('[data-field="date"]').textContent)
-  );
-
-  // Calculate running balance from bottom (oldest) upward
-  let running = 0;
-  for (let i = rows.length - 1; i >= 0; i--) {
-    const amt = parseFloat(rows[i].querySelector('[data-field="amount"]').textContent) || 0;
-    running += amt;
-    rows[i].querySelector('.balance-cell').textContent = running.toFixed(2);
+function deleteRow(button) {
+  if (!confirm('Are you sure you want to delete this entry?')) {
+    return;
   }
-
-  // Reinsert rows in newest->oldest order
-  rows.forEach(row => tbody.appendChild(row));
+  
+  const row = button.closest('tr');
+  const entryId = row.getAttribute('data-id');
+  
+  row.classList.add('loading');
+  
+  fetch(`/delete/${entryId}`, {
+    method: 'DELETE'
+  })
+  .then(response => {
+    if (!response.ok) {
+      return response.json().then(err => { throw new Error(err.error || 'Unknown error'); });
+    }
+    return response.json();
+  })
+  .then(result => {
+    row.remove();
+    location.reload();
+  })
+  .catch(error => {
+    row.classList.remove('loading');
+    alert('Error deleting entry: ' + error.message);
+  });
 }
 </script>
 
