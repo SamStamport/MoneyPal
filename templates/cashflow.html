@@ -115,6 +115,44 @@ document.getElementById('input-date').valueAsDate = new Date();
 
 calculateRunningBalance();
 
+document.getElementById('input-row').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addEntry();
+  }
+});
+
+function addEntry() {
+  const date = document.getElementById('input-date').value;
+  const amount = document.getElementById('input-amount').value;
+  const description = document.getElementById('input-description').value;
+  const notes = document.getElementById('input-notes').value;
+  
+  if (!date || !amount) {
+    alert('Date and amount are required');
+    return;
+  }
+  
+  const data = { date, amount, description, notes, account_type: 'bank' };
+  
+  fetch('/add-ajax', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.id) {
+      location.reload();
+    } else {
+      alert('Error adding entry: ' + result.error);
+    }
+  })
+  .catch(error => {
+    alert('Error: ' + error);
+  });
+}
+
 function calculateRunningBalance() {
   const tbody = document.querySelector('#cashflow-table tbody');
   const rows = Array.from(tbody.querySelectorAll('tr:not(#input-row)'));
