@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 from datetime import datetime, date
-from models import db, CashFlow
+from models import db, CashFlow, ACCOUNT_TYPE_BANK, ACCOUNT_TYPE_SECURED_VISA
 from sqlalchemy import func
+from io import StringIO
+import csv
 import os
 
 app = Flask(__name__)
@@ -17,7 +19,7 @@ db.init_app(app)
 # Create DB tables if they don't exist yet
 with app.app_context():
     db.create_all()
-    print("\033[1;34m✔️ Database initialized — loading complete.\033[0m")
+    print("\033[1;34m✓️ Database initialized – loading complete.\033[0m")
 
 
 @app.route('/', methods=['GET'])
@@ -26,57 +28,70 @@ def index():
     return redirect(url_for('list_entries'))
 
 
-@app.route('/dashboard', methods=['GET'])
-def dashboard():
-    today = date.today()
-    current_month = today.month
-    current_year = today.year
-    
-    monthly_summary = db.session.query(
-        func.sum(CashFlow.amount).label('total'),
-        func.count(CashFlow.id).label('count')
-    ).filter(
-        func.extract('month', CashFlow.date) == current_month,
-        func.extract('year', CashFlow.date) == current_year
-    ).first()
-    
-    if monthly_summary.total is None:
-        monthly_summary = type('obj', (object,), {'total': 0, 'count': 0})()
-    
-    recent_entries = CashFlow.query.order_by(CashFlow.date.desc()).limit(10).all()
-    net_worth = db.session.query(func.sum(CashFlow.amount)).scalar() or 0
-    
-    return render_template(
-        'dashboard.html',
-        monthly_summary=monthly_summary,
-        recent_entries=recent_entries,
-        net_worth=net_worth,
-        current_month=current_month,
-        current_year=current_year
-    )
-
-
 @app.route('/cashflow', methods=['GET'])
 def list_entries():
-    entries = CashFlow.query.filter_by(account_type='bank').order_by(CashFlow.date.desc()).all()
-    return render_template('cashflow.html', entries=entries)
+    entries = CashFlow.query.filter_by(account_type=ACCOUNT_TYPE_BANK).order_by(CashFlow.date.desc()).all()
+    
+    # Calculate running balance
+    running_balance = 0
+    entries_with_balance = []
+    for entry in reversed(entries):  # Start from oldest
+        running_balance += entry.amount
+        entries_with_balance.append({
+            'entry': entry,
+            'balance': running_balance
+        })
+    
+    entries_with_balance.reverse()  # Back to newest first
+    return render_template('cashflow.html', entries_with_balance=entries_with_balance)
 
 
 @app.route('/secured-visa', methods=['GET'])
 def secured_visa():
-    entries = CashFlow.query.filter_by(account_type='secured_visa').order_by(CashFlow.date.desc()).all()
-    return render_template('secured_visa.html', entries=entries)
+    entries = CashFlow.query.filter_by(account_type=ACCOUNT_TYPE_SECURED_VISA).order_by(CashFlow.date.desc()).all()
+    
+    # Calculate running balance
+    running_balance = 0
+    entries_with_balance = []
+    for entry in reversed(entries):  # Start from oldest
+        running_balance += entry.amount
+        entries_with_balance.append({
+            'entry': entry,
+            'balance': running_balance
+        })
+    
+    entries_with_balance.reverse()  # Back to newest first
+    return render_template('secured_visa.html', entries_with_balance=entries_with_balance)
 
 
 @app.route('/add-ajax', methods=['POST'])
 def add_entry_ajax():
     try:
         data = request.get_json()
-        date_obj = datetime.strptime(data['date'], "%Y-%m-%d").date()
-        amount = float(data['amount'])
+        
+        # Validate required fields
+        if not data.get('date') or not data.get('amount'):
+            return jsonify({'error': 'Date and amount are required'}), 400
+        
+        # Validate and parse date
+        try:
+            date_obj = datetime.strptime(data['date'], "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({'error': 'Invalid date format'}), 400
+        
+        # Validate and parse amount
+        try:
+            amount = float(data['amount'])
+        except (ValueError, TypeError):
+            return jsonify({'error': 'Invalid amount'}), 400
+        
         description = data.get('description', '')
         notes = data.get('notes', '')
-        account_type = data.get('account_type', 'bank')
+        account_type = data.get('account_type', ACCOUNT_TYPE_BANK)
+        
+        # Validate account type
+        if account_type not in [ACCOUNT_TYPE_BANK, ACCOUNT_TYPE_SECURED_VISA]:
+            return jsonify({'error': 'Invalid account type'}), 400
 
         new_entry = CashFlow(
             date=date_obj,
@@ -97,6 +112,7 @@ def add_entry_ajax():
         }), 201
 
     except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
 
@@ -107,11 +123,20 @@ def update_entry(entry_id):
         entry = CashFlow.query.get_or_404(entry_id)
 
         if 'date' in data:
-            entry.date = datetime.strptime(data['date'], "%Y-%m-%d").date()
+            try:
+                entry.date = datetime.strptime(data['date'], "%Y-%m-%d").date()
+            except ValueError:
+                return jsonify({'error': 'Invalid date format'}), 400
+                
         if 'amount' in data:
-            entry.amount = float(data['amount'])
+            try:
+                entry.amount = float(data['amount'])
+            except (ValueError, TypeError):
+                return jsonify({'error': 'Invalid amount'}), 400
+                
         if 'description' in data:
             entry.description = data['description']
+            
         if 'notes' in data:
             entry.notes = data['notes']
 
@@ -119,6 +144,7 @@ def update_entry(entry_id):
         return jsonify({'success': True}), 200
 
     except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
 
@@ -130,15 +156,15 @@ def delete_entry(entry_id):
         db.session.commit()
         return jsonify({'success': True}), 200
     except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
 
 @app.route('/export-csv', methods=['GET'])
 def export_cashflow_csv():
-    from io import StringIO
-    import csv
+    account_type = request.args.get('account_type', ACCOUNT_TYPE_BANK)
     
-    entries = CashFlow.query.order_by(CashFlow.date).all()
+    entries = CashFlow.query.filter_by(account_type=account_type).order_by(CashFlow.date).all()
     
     csvfile = StringIO()
     writer = csv.writer(csvfile)
@@ -156,9 +182,9 @@ def export_cashflow_csv():
     csvfile.close()
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f'cashflow_export_{timestamp}.csv'
+    account_name = 'bank' if account_type == ACCOUNT_TYPE_BANK else 'secured_visa'
+    filename = f'cashflow_export_{account_name}_{timestamp}.csv'
     
-    from flask import Response
     return Response(
         output,
         mimetype='text/csv',
@@ -170,6 +196,6 @@ if __name__ == '__main__':
     print("\n" + "="*60)
     print("\033[1;33m🚀 MONEYPAL STARTING...\033[0m")
     print("\033[1;32m📱 OPEN http://127.0.0.1:5000/ IN YOUR BROWSER!\033[0m")
-    print("\033[1;34m✔️ Server running — ready for requests.\033[0m")
+    print("\033[1;34m✓️ Server running – ready for requests.\033[0m")
     print("="*60 + "\n")
     app.run(debug=True)
