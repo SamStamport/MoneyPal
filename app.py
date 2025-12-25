@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request, jsonify, Response
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from models import db, CashFlow, ACCOUNT_TYPE_BANK, ACCOUNT_TYPE_SECURED_VISA
 from sqlalchemy import func
 from io import StringIO
 import csv
 import os
+import json
 
 app = Flask(__name__)
 
@@ -62,6 +63,82 @@ def secured_visa():
     
     entries_with_balance.reverse()  # Back to newest first
     return render_template('secured_visa.html', entries_with_balance=entries_with_balance)
+
+
+@app.route('/charts', methods=['GET'])
+def charts():
+    """Display interactive charts for cash flow analysis and projections"""
+    
+    # Get all entries for both accounts, sorted by date
+    bank_entries = CashFlow.query.filter_by(account_type=ACCOUNT_TYPE_BANK).order_by(CashFlow.date).all()
+    visa_entries = CashFlow.query.filter_by(account_type=ACCOUNT_TYPE_SECURED_VISA).order_by(CashFlow.date).all()
+    
+    # Calculate running balances for bank account
+    bank_data = []
+    running_balance = 0
+    for entry in bank_entries:
+        running_balance += entry.amount
+        bank_data.append({
+            'date': entry.date.strftime('%Y-%m-%d'),
+            'balance': round(running_balance, 2)
+        })
+    
+    # Calculate running balances for secured visa
+    visa_data = []
+    running_balance = 0
+    for entry in visa_entries:
+        running_balance += entry.amount
+        visa_data.append({
+            'date': entry.date.strftime('%Y-%m-%d'),
+            'balance': round(running_balance, 2)
+        })
+    
+    # Calculate projections (30 days into future)
+    bank_projection = calculate_projection(bank_entries, ACCOUNT_TYPE_BANK, days=30)
+    visa_projection = calculate_projection(visa_entries, ACCOUNT_TYPE_SECURED_VISA, days=30)
+    
+    return render_template('charts.html', 
+                         bank_data=json.dumps(bank_data),
+                         visa_data=json.dumps(visa_data),
+                         bank_projection=json.dumps(bank_projection),
+                         visa_projection=json.dumps(visa_projection))
+
+
+def calculate_projection(entries, account_type, days=30):
+    """Calculate future balance projection based on recent trends"""
+    if len(entries) < 10:
+        return []
+    
+    # Use last 30 days of data to calculate average daily change
+    recent_date = datetime.now().date() - timedelta(days=30)
+    recent_entries = [e for e in entries if e.date >= recent_date]
+    
+    if len(recent_entries) < 2:
+        recent_entries = entries[-10:]  # Use last 10 entries if not enough recent data
+    
+    # Calculate average daily change
+    if len(recent_entries) > 0:
+        total_change = sum(e.amount for e in recent_entries)
+        days_span = (recent_entries[-1].date - recent_entries[0].date).days or 1
+        avg_daily_change = total_change / days_span
+    else:
+        avg_daily_change = 0
+    
+    # Get current balance
+    current_balance = sum(e.amount for e in entries)
+    last_date = entries[-1].date if entries else datetime.now().date()
+    
+    # Generate projection
+    projection = []
+    for i in range(1, days + 1):
+        proj_date = last_date + timedelta(days=i)
+        proj_balance = current_balance + (avg_daily_change * i)
+        projection.append({
+            'date': proj_date.strftime('%Y-%m-%d'),
+            'balance': round(proj_balance, 2)
+        })
+    
+    return projection
 
 
 @app.route('/add-ajax', methods=['POST'])

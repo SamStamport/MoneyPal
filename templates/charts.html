@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#F2EBDD">
+  <title>Cash Flow Charts</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+  <style>
+    body {
+      font-family: Segoe UI, Tahoma, sans-serif;
+      background: #9CAF88;
+      padding: 24px;
+      margin: 0;
+    }
+    .container {
+      max-width: 1400px;
+      margin: auto;
+      background: #E8F5C4;
+      border: 1px solid #9E9E9E;
+    }
+    .excel-header {
+      background: #4A6741;
+      color: #fff;
+      padding: 14px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .nav-btn {
+      color: #fff;
+      border: 1px solid #fff;
+      padding: 4px 10px;
+      text-decoration: none;
+      font-size: 11px;
+      cursor: pointer;
+      background: transparent;
+    }
+    .nav-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .chart-container {
+      padding: 20px;
+    }
+    .chart-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #4A6741;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #4A6741;
+    }
+    .chart-description {
+      color: #666;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    #cashflow-chart {
+      width: 100%;
+      height: 600px;
+    }
+    .info-box {
+      background: #E8F5C4;
+      border: 1px solid #9CAF88;
+      padding: 15px;
+      margin: 20px;
+      border-radius: 4px;
+    }
+    .info-box h3 {
+      margin-top: 0;
+      color: #4A6741;
+    }
+    .info-box ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    .info-box li {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <div class="excel-header">
+    Cash Flow Analysis & Projections
+    <div class="nav-buttons">
+      <a href="/cashflow" class="nav-btn">Bank Account</a>
+      <a href="/secured-visa" class="nav-btn">Secured Visa</a>
+      <a href="/charts" class="nav-btn">Charts</a>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <h3>📊 About This Chart</h3>
+    <ul>
+      <li><strong>Solid lines</strong> show actual historical balance data</li>
+      <li><strong>Dashed lines</strong> show projected future balances (next 30 days)</li>
+      <li><strong>Blue</strong> = Bank Account | <strong>Red</strong> = Secured Visa</li>
+      <li>Projections are based on average spending/income trends from the last 30 days</li>
+      <li>Hover over any point to see exact date and balance</li>
+      <li>Click and drag to zoom in on a specific time period</li>
+      <li>Double-click to reset zoom</li>
+    </ul>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Combined Cash Flow with 30-Day Projections</div>
+    <div class="chart-description">
+      Historical balances and future projections for both accounts
+    </div>
+    <div id="cashflow-chart"></div>
+  </div>
+
+</div>
+
+<script>
+// Get data from Flask
+const bankData = {{ bank_data | safe }};
+const visaData = {{ visa_data | safe }};
+const bankProjection = {{ bank_projection | safe }};
+const visaProjection = {{ visa_projection | safe }};
+
+// Prepare traces for Plotly
+const traces = [];
+
+// Bank account historical data
+if (bankData.length > 0) {
+  traces.push({
+    x: bankData.map(d => d.date),
+    y: bankData.map(d => d.balance),
+    name: 'Bank Account',
+    type: 'scatter',
+    mode: 'lines',
+    line: {
+      color: '#2196F3',
+      width: 3
+    },
+    hovertemplate: '<b>Bank Account</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
+  });
+}
+
+// Bank account projection
+if (bankProjection.length > 0) {
+  // Connect last historical point to first projection point
+  const lastBankBalance = bankData.length > 0 ? bankData[bankData.length - 1].balance : 0;
+  const lastBankDate = bankData.length > 0 ? bankData[bankData.length - 1].date : bankProjection[0].date;
+  
+  traces.push({
+    x: [lastBankDate, ...bankProjection.map(d => d.date)],
+    y: [lastBankBalance, ...bankProjection.map(d => d.balance)],
+    name: 'Bank Projection',
+    type: 'scatter',
+    mode: 'lines',
+    line: {
+      color: '#2196F3',
+      width: 2,
+      dash: 'dash'
+    },
+    hovertemplate: '<b>Bank Projection</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
+  });
+}
+
+// Secured Visa historical data
+if (visaData.length > 0) {
+  traces.push({
+    x: visaData.map(d => d.date),
+    y: visaData.map(d => d.balance),
+    name: 'Secured Visa',
+    type: 'scatter',
+    mode: 'lines',
+    line: {
+      color: '#F44336',
+      width: 3
+    },
+    hovertemplate: '<b>Secured Visa</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
+  });
+}
+
+// Secured Visa projection
+if (visaProjection.length > 0) {
+  const lastVisaBalance = visaData.length > 0 ? visaData[visaData.length - 1].balance : 0;
+  const lastVisaDate = visaData.length > 0 ? visaData[visaData.length - 1].date : visaProjection[0].date;
+  
+  traces.push({
+    x: [lastVisaDate, ...visaProjection.map(d => d.date)],
+    y: [lastVisaBalance, ...visaProjection.map(d => d.balance)],
+    name: 'Visa Projection',
+    type: 'scatter',
+    mode: 'lines',
+    line: {
+      color: '#F44336',
+      width: 2,
+      dash: 'dash'
+    },
+    hovertemplate: '<b>Visa Projection</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
+  });
+}
+
+// Layout configuration
+const layout = {
+  xaxis: {
+    title: 'Date',
+    gridcolor: '#E0E0E0',
+    showgrid: true
+  },
+  yaxis: {
+    title: 'Balance ($)',
+    gridcolor: '#E0E0E0',
+    showgrid: true,
+    tickformat: '$,.2f',
+    rangemode: 'tozero'
+  },
+  hovermode: 'closest',
+  plot_bgcolor: '#E8F5C4',
+  paper_bgcolor: '#9CAF88',
+  font: {
+    family: 'Segoe UI, Tahoma, sans-serif',
+    size: 12
+  },
+  legend: {
+    x: 0.01,
+    y: 0.99,
+    bgcolor: 'rgba(232,245,196,0.9)',
+    bordercolor: '#999',
+    borderwidth: 1
+  },
+  margin: {
+    l: 80,
+    r: 40,
+    t: 20,
+    b: 60
+  }
+};
+
+// Configuration
+const config = {
+  responsive: true,
+  displayModeBar: true,
+  modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+  displaylogo: false
+};
+
+// Create the chart
+Plotly.newPlot('cashflow-chart', traces, layout, config);
+</script>
+
+</body>
+</html>
