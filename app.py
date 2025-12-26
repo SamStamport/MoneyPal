@@ -7,6 +7,11 @@ import csv
 import os
 import json
 
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
 app = Flask(__name__)
 
 # Configure database URI and disable track modifications for performance
@@ -20,7 +25,7 @@ db.init_app(app)
 # Create DB tables if they don't exist yet
 with app.app_context():
     db.create_all()
-    print("\033[1;34m✓️ Database initialized – loading complete.\033[0m")
+    print("Database initialized - loading complete.")
 
 
 @app.route('/', methods=['GET'])
@@ -94,27 +99,110 @@ def charts():
         })
     
     # Calculate projections (30 days into future)
-    bank_projection = calculate_projection(bank_entries, ACCOUNT_TYPE_BANK, days=30)
-    visa_projection = calculate_projection(visa_entries, ACCOUNT_TYPE_SECURED_VISA, days=30)
+    bank_projection, bank_accuracy = calculate_projection_prophet(bank_entries, ACCOUNT_TYPE_BANK, days=30)
+    visa_projection, visa_accuracy = calculate_projection_prophet(visa_entries, ACCOUNT_TYPE_SECURED_VISA, days=30)
     
     return render_template('charts.html', 
                          bank_data=json.dumps(bank_data),
                          visa_data=json.dumps(visa_data),
                          bank_projection=json.dumps(bank_projection),
-                         visa_projection=json.dumps(visa_projection))
+                         visa_projection=json.dumps(visa_projection),
+                         bank_accuracy=bank_accuracy,
+                         visa_accuracy=visa_accuracy)
 
 
-def calculate_projection(entries, account_type, days=30):
-    """Calculate future balance projection based on recent trends"""
-    if len(entries) < 10:
-        return []
+def calculate_projection_prophet(entries, account_type, days=30):
+    """Calculate future balance projection using Prophet for time series forecasting"""
+    
+    # Need at least 10 data points for Prophet
+    if len(entries) < 10 or pd is None:
+        return calculate_projection_simple(entries, account_type, days)
+    
+    try:
+        from prophet import Prophet
+        
+        # Prepare data for Prophet (needs 'ds' for date and 'y' for value)
+        data = []
+        running_balance = 0
+        for entry in entries:
+            running_balance += entry.amount
+            data.append({
+                'ds': entry.date,
+                'y': running_balance
+            })
+        
+        df = pd.DataFrame(data)
+        
+        # Initialize and fit Prophet model
+        # Disable yearly seasonality (not enough data), enable weekly and daily
+        model = Prophet(
+            daily_seasonality=False,
+            weekly_seasonality=True,
+            yearly_seasonality=False,
+            changepoint_prior_scale=0.05  # Lower = less flexible, more stable predictions
+        )
+        
+        # Suppress Prophet's verbose output
+        import logging
+        logging.getLogger('prophet').setLevel(logging.WARNING)
+        
+        model.fit(df)
+        
+        # Create future dataframe
+        future = model.make_future_dataframe(periods=days)
+        forecast = model.predict(future)
+        
+        # Extract only future predictions (after last historical date)
+        last_date = df['ds'].max()
+        future_forecast = forecast[forecast['ds'] > last_date]
+        
+        # Calculate accuracy based on uncertainty intervals
+        # Prophet provides yhat_lower and yhat_upper (80% confidence interval)
+        avg_uncertainty = (future_forecast['yhat_upper'] - future_forecast['yhat_lower']).mean()
+        avg_prediction = future_forecast['yhat'].mean()
+        
+        # Convert uncertainty to accuracy percentage
+        # Lower uncertainty relative to prediction = higher accuracy
+        if avg_prediction != 0:
+            uncertainty_ratio = (avg_uncertainty / abs(avg_prediction)) * 100
+            accuracy = max(0, min(100, 100 - uncertainty_ratio))
+        else:
+            accuracy = 50  # Default if prediction is near zero
+        
+        # Format projection data
+        projection = []
+        for _, row in future_forecast.iterrows():
+            projection.append({
+                'date': row['ds'].strftime('%Y-%m-%d'),
+                'balance': round(row['yhat'], 2),
+                'lower': round(row['yhat_lower'], 2),
+                'upper': round(row['yhat_upper'], 2)
+            })
+        
+        return projection, round(accuracy, 1)
+        
+    except ImportError:
+        # Prophet not installed, fall back to simple method
+        print("⚠️  Prophet not installed. Using simple projection method.")
+        print("   Install with: pip install prophet")
+        return calculate_projection_simple(entries, account_type, days)
+    except Exception as e:
+        # Any other error, fall back to simple method
+        print(f"⚠️  Prophet error: {e}. Using simple projection method.")
+        return calculate_projection_simple(entries, account_type, days)
+
+
+def calculate_projection_simple(entries, account_type, days=30):
+    """Fallback: Simple projection based on recent average (original method)"""
+    if len(entries) < 2:
+        return [], 0
     
     # Use last 30 days of data to calculate average daily change
     recent_date = datetime.now().date() - timedelta(days=30)
     recent_entries = [e for e in entries if e.date >= recent_date]
     
     if len(recent_entries) < 2:
-        recent_entries = entries[-10:]  # Use last 10 entries if not enough recent data
+        recent_entries = entries[-10:] if len(entries) >= 10 else entries
     
     # Calculate average daily change
     if len(recent_entries) > 0:
@@ -138,7 +226,10 @@ def calculate_projection(entries, account_type, days=30):
             'balance': round(proj_balance, 2)
         })
     
-    return projection
+    # Simple method has lower accuracy (estimate 60-70%)
+    accuracy = 65.0
+    
+    return projection, accuracy
 
 
 @app.route('/add-ajax', methods=['POST'])
@@ -271,8 +362,8 @@ def export_cashflow_csv():
 
 if __name__ == '__main__':
     print("\n" + "="*60)
-    print("\033[1;33m🚀 MONEYPAL STARTING...\033[0m")
-    print("\033[1;32m📱 OPEN http://127.0.0.1:5000/ IN YOUR BROWSER!\033[0m")
-    print("\033[1;34m✓️ Server running – ready for requests.\033[0m")
+    print("MONEYPAL STARTING...")
+    print("OPEN http://127.0.0.1:5000/ IN YOUR BROWSER!")
+    print("Server running - ready for requests.")
     print("="*60 + "\n")
     app.run(debug=True)

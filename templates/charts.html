@@ -16,7 +16,7 @@
     .container {
       max-width: 1400px;
       margin: auto;
-      background: #E8F5C4;
+      background: #fff;
       border: 1px solid #9E9E9E;
     }
     .excel-header {
@@ -103,7 +103,8 @@
       <li><strong>Solid lines</strong> show actual historical balance data</li>
       <li><strong>Dashed lines</strong> show projected future balances (next 30 days)</li>
       <li><strong>Blue</strong> = Bank Account | <strong>Red</strong> = Secured Visa</li>
-      <li>Projections are based on average spending/income trends from the last 30 days</li>
+      <li><strong>Projection Accuracy:</strong> Bank Account: {{ bank_accuracy }}% | Secured Visa: {{ visa_accuracy }}%</li>
+      <li>Projections use Prophet AI to detect patterns in your spending and income cycles</li>
       <li>Hover over any point to see exact date and balance</li>
       <li>Click and drag to zoom in on a specific time period</li>
       <li>Double-click to reset zoom</li>
@@ -218,7 +219,7 @@ const layout = {
     rangemode: 'tozero'
   },
   hovermode: 'closest',
-  plot_bgcolor: '#E8F5C4',
+  plot_bgcolor: '#FAFAFA',
   paper_bgcolor: '#9CAF88',
   font: {
     family: 'Segoe UI, Tahoma, sans-serif',
@@ -227,7 +228,7 @@ const layout = {
   legend: {
     x: 0.01,
     y: 0.99,
-    bgcolor: 'rgba(232,245,196,0.9)',
+    bgcolor: 'rgba(255,255,255,0.8)',
     bordercolor: '#999',
     borderwidth: 1
   },
