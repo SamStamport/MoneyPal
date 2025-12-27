@@ -14,8 +14,32 @@ except ImportError:
 
 app = Flask(__name__)
 
-# Configure database URI and disable track modifications for performance
-db_path = os.path.join(os.path.dirname(__file__), 'cashflow.db')
+# Database configuration
+def get_database_config():
+    pref_file = os.path.join(os.path.dirname(__file__), 'db_preference.txt')
+    
+    if not os.path.exists(pref_file):
+        print("\n" + "="*60)
+        print("FIRST TIME SETUP - DATABASE SELECTION")
+        print("="*60)
+        while True:
+            choice = input("Choose database mode (LIVE/SAMPLE): ").upper().strip()
+            if choice in ['LIVE', 'SAMPLE']:
+                with open(pref_file, 'w') as f:
+                    f.write(choice)
+                break
+            print("Please enter LIVE or SAMPLE")
+    
+    with open(pref_file, 'r') as f:
+        mode = f.read().strip().upper()
+    
+    if mode == 'LIVE':
+        return 'cashflowlive.db', mode
+    else:
+        return 'cashflowtest.db', mode
+
+db_filename, current_db_mode = get_database_config()
+db_path = os.path.join(os.path.dirname(__file__), db_filename)
 os.makedirs(os.path.dirname(db_path), exist_ok=True)
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -49,7 +73,7 @@ def list_entries():
         })
     
     entries_with_balance.reverse()  # Back to newest first
-    return render_template('cashflow.html', entries_with_balance=entries_with_balance)
+    return render_template('cashflow.html', entries_with_balance=entries_with_balance, current_db_mode=current_db_mode)
 
 
 @app.route('/secured-visa', methods=['GET'])
@@ -67,7 +91,7 @@ def secured_visa():
         })
     
     entries_with_balance.reverse()  # Back to newest first
-    return render_template('secured_visa.html', entries_with_balance=entries_with_balance)
+    return render_template('secured_visa.html', entries_with_balance=entries_with_balance, current_db_mode=current_db_mode)
 
 
 @app.route('/charts', methods=['GET'])
@@ -108,7 +132,8 @@ def charts():
                          bank_projection=json.dumps(bank_projection),
                          visa_projection=json.dumps(visa_projection),
                          bank_accuracy=bank_accuracy,
-                         visa_accuracy=visa_accuracy)
+                         visa_accuracy=visa_accuracy,
+                         current_db_mode=current_db_mode)
 
 
 def calculate_projection_prophet(entries, account_type, days=30):
@@ -328,6 +353,21 @@ def delete_entry(entry_id):
         return jsonify({'error': str(e)}), 400
 
 
+@app.route('/switch-database', methods=['POST'])
+def switch_database():
+    pref_file = os.path.join(os.path.dirname(__file__), 'db_preference.txt')
+    
+    with open(pref_file, 'r') as f:
+        current_mode = f.read().strip().upper()
+    
+    new_mode = 'SAMPLE' if current_mode == 'LIVE' else 'LIVE'
+    
+    with open(pref_file, 'w') as f:
+        f.write(new_mode)
+    
+    return jsonify({'message': f'Database switched to {new_mode}. Please restart the application.'})
+
+
 @app.route('/export-csv', methods=['GET'])
 def export_cashflow_csv():
     account_type = request.args.get('account_type', ACCOUNT_TYPE_BANK)
@@ -362,6 +402,10 @@ def export_cashflow_csv():
 
 if __name__ == '__main__':
     print("\n" + "="*60)
+    if current_db_mode == 'LIVE':
+        print("🔴 LIVE DATABASE - REAL DATA")
+    else:
+        print("🟢 SAMPLE DATABASE - TEST DATA")
     print("MONEYPAL STARTING...")
     print("OPEN http://127.0.0.1:5000/ IN YOUR BROWSER!")
     print("Server running - ready for requests.")

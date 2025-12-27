@@ -100,7 +100,11 @@
 
   <div class="excel-header">
     Cash Flow Ledger - Bank Account
+    <span style="margin: 0 20px; padding: 4px 8px; border-radius: 4px; font-size: 10px; background: {{ 'red' if current_db_mode == 'LIVE' else 'green' }}; color: white;">
+      {{ '🔴 LIVE' if current_db_mode == 'LIVE' else '🟢 SAMPLE' }}
+    </span>
     <div class="header-buttons">
+      <button onclick="switchDatabase()" class="account-btn">Switch DB</button>
       <a href="/cashflow" class="account-btn">Bank Account</a>
       <a href="/secured-visa" class="account-btn">Secured Visa</a>
       <a href="/charts" class="account-btn">Charts</a>
@@ -150,6 +154,16 @@
 </div>
 
 <script>
+function switchDatabase() {
+  if (confirm('Switch database? This requires restarting the app.')) {
+    fetch('/switch-database', { method: 'POST' })
+      .then(response => response.json())
+      .then(data => {
+        alert(data.message);
+      });
+  }
+}
+
 document.getElementById('input-date').valueAsDate = new Date();
 
 // Add entry on Enter key

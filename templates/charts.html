@@ -108,7 +108,11 @@
 
   <div class="excel-header">
     Cash Flow Analysis & Projections
+    <span style="margin: 0 20px; padding: 4px 8px; border-radius: 4px; font-size: 10px; background: {{ 'red' if current_db_mode == 'LIVE' else 'green' }}; color: white;">
+      {{ '🔴 LIVE' if current_db_mode == 'LIVE' else '🟢 SAMPLE' }}
+    </span>
     <div class="nav-buttons">
+      <button onclick="switchDatabase()" class="nav-btn">Switch DB</button>
       <a href="/cashflow" class="nav-btn">Bank Account</a>
       <a href="/secured-visa" class="nav-btn">Secured Visa</a>
       <a href="/charts" class="nav-btn">Charts</a>
@@ -272,6 +276,16 @@ const config = {
 
 // Create the chart
 Plotly.newPlot('cashflow-chart', traces, layout, config);
+
+function switchDatabase() {
+  if (confirm('Switch database? This requires restarting the app.')) {
+    fetch('/switch-database', { method: 'POST' })
+      .then(response => response.json())
+      .then(data => {
+        alert(data.message);
+      });
+  }
+}
 </script>
 
 </body>
