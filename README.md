@@ -9,9 +9,9 @@ A Flask-based personal finance PWA focused on **cash flow forecasting** rather t
 **MoneyPal** addresses a key gap in personal finance apps: most track past spending but don't solve the real problem of "will I have enough money left at the end of the month?"
 
 ### Our Approach
-- **Cash Flow Forecasting**: AI-powered predictions based on historical spending patterns
+- **AI-Powered Cash Flow Forecasting**: Prophet-based predictions using historical spending patterns
 - **Forward-Looking**: Focus on future financial health vs. past analysis
-- **Voice-First**: Hands-free expense logging and conversational financial insights
+- **Database Switching**: Seamless switching between LIVE and SAMPLE data modes
 - **Privacy-Focused**: Manual data entry gives users full control over their financial data
 - **Minimal & Focused**: Essential features without bloat
 
@@ -19,44 +19,58 @@ A Flask-based personal finance PWA focused on **cash flow forecasting** rather t
 - People frustrated with traditional budgeting apps
 - Those seeking forward-looking financial insights
 - Users who value privacy and data control
-- Individuals wanting hands-free expense tracking
+- Individuals wanting reliable cash flow predictions
 
 ### Competitive Advantages
-- **Cash flow forecasting** is rare in consumer finance apps
-- **Voice-first interaction** for accessibility and convenience
+- **AI cash flow forecasting** with Prophet time series analysis
+- **Database mode switching** for safe testing and live data
 - **Privacy-focused** manual entry approach
 - **Minimal, focused** feature set vs. bloated competitors
 
 ## 🚀 Features
 
-### Core Functionality
-- **Cash Flow Tracking**: Record income and expenses with categories
+### Core Functionality ✅
+- **Cash Flow Tracking**: Record income and expenses for Bank Account and Secured Visa
 - **Auto-Save Editing**: Click any cell to edit inline with automatic saving
-- **Forward-Looking Insights**: Focus on cash flow forecasting vs. past spending analysis
-- **Category Management**: Organize transactions by type and purpose
-- **Data Export**: Export financial data in multiple formats
+- **AI-Powered Forecasting**: 30-day cash flow predictions using Prophet or simple averaging
+- **Interactive Charts**: Plotly-based visualizations with historical data and projections
+- **Database Mode Switching**: Toggle between LIVE (real data) and SAMPLE (test data) modes
+- **Sticky Headers**: Table headers remain visible while scrolling
+- **Data Export**: Export financial data in CSV format
+- **Running Balance**: Real-time balance calculations across all transactions
 
-
+### Advanced Features ✅
+- **Prophet AI Integration**: Advanced time series forecasting with accuracy metrics
+- **Dual Account Support**: Separate tracking for Bank Account and Secured Visa
+- **Visual Database Indicators**: Clear 🔴 LIVE / 🟢 SAMPLE mode display
+- **Responsive Design**: Cohesive color scheme across all interfaces
+- **Error Handling**: Graceful fallback from AI to simple forecasting
 
 ## 🛠️ Technology Stack
 
 - **Backend**: Flask 3.0.0, Python 3.6+
 - **Database**: SQLite with SQLAlchemy ORM
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Dependencies**: Flask-SQLAlchemy, python-dotenv
+- **AI/ML**: Prophet for time series forecasting, Pandas for data processing
+- **Frontend**: HTML5, CSS3, JavaScript, Plotly.js for charts
+- **Dependencies**: Flask-SQLAlchemy, python-dotenv, pandas, prophet
 
 ## 📁 Project Structure
 
 ```
 MoneyPal/
-├── app.py                 # Main Flask application
-├── models.py             # Database models (CashFlow)
-├── requirements.txt      # Python dependencies
-├── seed_sample_data.py   # Sample data generator
-├── templates/            # HTML templates
-│   ├── dashboard.html   # Financial dashboard
-│   └── cashflow.html    # Cash flow management
-└── project_files_overview.txt # Project documentation
+├── app.py                          # Main Flask application with AI forecasting
+├── models.py                       # Database models (CashFlow)
+├── requirements.txt                # Python dependencies including Prophet
+├── db_preference.txt               # Database mode preference (LIVE/SAMPLE)
+├── cashflowlive.db                 # Live database (real data)
+├── cashflowtest.db                 # Sample database (test data)
+├── populate_sample_data.py         # Sample data generator
+├── populate_secured_visa_data.py   # Secured Visa sample data
+├── templates/                      # HTML templates
+│   ├── cashflow.html              # Bank account management
+│   ├── secured_visa.html           # Secured Visa management
+│   └── charts.html                 # Interactive charts with forecasting
+└── README.md                       # Project documentation
 ```
 
 ## 🚀 Quick Start
@@ -78,37 +92,49 @@ MoneyPal/
    pip install -r requirements.txt
    python app.py
    ```
-   Then visit: http://localhost:5000
+   
+3. **First-time setup**
+   - Choose LIVE or SAMPLE database mode when prompted
+   - Visit: http://localhost:5000
 
 ## 📊 Usage
 
+### Database Mode Selection
+- **First Run**: Terminal prompts for LIVE or SAMPLE mode
+- **Subsequent Runs**: Automatically uses saved preference
+- **Mode Switching**: Use "Switch DB" button in any page header
+- **Visual Indicators**: 🔴 LIVE DATABASE or 🟢 SAMPLE DATABASE always visible
+
 ### Cash Flow Management
-- Add income and expense entries with Enter key
-- **Inline Editing**: Click any cell (date, amount, description, category, notes) to edit
+- **Dual Accounts**: Separate Bank Account and Secured Visa tracking
+- **Inline Editing**: Click any cell (date, amount, description, notes) to edit
 - **Auto-Save**: Changes save automatically when you click away
-- **Visual Feedback**: See saving status with color-coded indicators
-- **Error Handling**: Automatic retry on network errors with visual feedback
-- **Data Validation**: Real-time validation for dates and amounts
-- Categorize transactions
-- View financial dashboard with monthly summaries
-- Export data to CSV format
+- **Running Balance**: Real-time balance calculations
+- **Sticky Headers**: Headers remain visible while scrolling through data
 
-
+### AI-Powered Forecasting
+- **Charts Page**: Interactive Plotly visualizations
+- **Prophet Integration**: Advanced time series analysis for 10+ data points
+- **Simple Fallback**: Average-based predictions for smaller datasets
+- **Accuracy Metrics**: Confidence intervals and accuracy percentages
+- **30-Day Projections**: Future balance predictions for both accounts
 
 ## 🔧 Configuration
 
-### Environment Variables
+### Database Modes
+- **LIVE Mode**: Uses `cashflowlive.db` for real financial data
+- **SAMPLE Mode**: Uses `cashflowtest.db` for testing and demonstrations
+- **Preference Storage**: Mode saved in `db_preference.txt`
+- **Safe Switching**: Clear visual indicators prevent accidental data mixing
+
+### Environment Variables (Optional)
 Create a `.env` file in the project root:
 ```env
 FLASK_ENV=development
 SECRET_KEY=your-secret-key-here
-DATABASE_URL=sqlite:///cashflow.db
 ```
 
-### Database
-The application uses SQLite and stores data in `C:\Users\[username]\Documents\MoneyPal\cashflow.db`. The database will be created automatically on first run.
-
-## 📈 Roadmap
+## 📈 Current Status
 
 ### Phase 1: Core Features ✅
 - [x] Basic Flask application structure
@@ -121,21 +147,22 @@ The application uses SQLite and stores data in `C:\Users\[username]\Documents\Mo
 - [x] Inline editing with auto-save functionality
 - [x] Visual feedback and error handling
 - [x] Data validation and currency formatting
-- [x] Financial dashboard and reporting
-- [x] Category management
+- [x] Dual account support (Bank + Secured Visa)
+- [x] Running balance calculations
 
-### Phase 3: AI-Powered Features 📋
-- [ ] **AI Cash Flow Prediction**: Historical data analysis for future forecasting
-- [ ] **Voice Input**: Speech recognition for hands-free expense logging
-- [ ] **Receipt Photo Capture**: AI parsing of receipt images
-- [ ] **Smart Alerts**: Upcoming low balance period notifications
-- [ ] **Conversational Interface**: Voice queries for cash flow insights
-- [ ] **Recurring Bills Integration**: Predictable expense automation
+### Phase 3: AI-Powered Features ✅
+- [x] **AI Cash Flow Prediction**: Prophet-based forecasting with accuracy metrics
+- [x] **Interactive Charts**: Plotly visualizations with historical and projected data
+- [x] **Database Mode Switching**: Safe LIVE/SAMPLE data separation
+- [x] **Advanced UI**: Sticky headers, cohesive color scheme
+- [x] **Error Handling**: Graceful AI fallback to simple methods
 
 ### Phase 4: Advanced Features 📋
-- [ ] Data visualization charts
-- [ ] Goal tracking
-- [ ] User authentication
+- [ ] Voice input for expense logging
+- [ ] Receipt photo capture with AI parsing
+- [ ] Smart alerts for low balance predictions
+- [ ] Goal tracking and budget management
+- [ ] User authentication system
 - [ ] Mobile PWA optimization
 
 ## 🤝 Contributing
@@ -153,7 +180,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 - **Issues**: Report bugs and feature requests on GitHub
-- **Documentation**: Check the project_files_overview.txt for detailed file descriptions
+- **Documentation**: Check the ROADMAP.md and CHANGELOG.md for detailed information
 - **Questions**: Open a discussion on GitHub
 
 ## 🔄 Changelog
@@ -162,4 +189,4 @@ See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes and updates.
 
 ---
 
-**MoneyPal** - Take control of your finances, one transaction at a time.
+**MoneyPal** - Take control of your finances with AI-powered forecasting.

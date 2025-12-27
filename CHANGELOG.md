@@ -5,7 +5,51 @@ All notable changes to MoneyPal will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - 2025-01-XX
+
+### Added
+- **AI-Powered Cash Flow Forecasting**: Prophet-based time series analysis for 30-day predictions
+- **Database Mode Switching**: Seamless toggle between LIVE and SAMPLE data modes
+  - First-time setup prompts for database mode selection
+  - Visual indicators (🔴 LIVE / 🟢 SAMPLE) in terminal and web interface
+  - "Switch DB" button in all page headers
+  - Persistent mode preference storage in `db_preference.txt`
+- **Interactive Charts**: Plotly-based visualizations with historical data and projections
+  - Combined cash flow chart with 30-day forecasting
+  - Accuracy metrics display for prediction confidence
+  - Hover tooltips with exact values and dates
+  - Cohesive color scheme matching application design
+- **Dual Account Support**: Separate tracking for Bank Account and Secured Visa
+  - Individual running balance calculations
+  - Account-specific data export
+  - Dedicated management interfaces
+- **Advanced UI Improvements**:
+  - Sticky table headers that remain visible while scrolling
+  - Cohesive light green color scheme across all interfaces
+  - Bold axis labels in charts for better readability
+  - Responsive design with consistent styling
+
+### Changed
+- **Technology Stack Enhancement**: Added pandas and prophet dependencies
+- **Database Architecture**: Split into `cashflowlive.db` (real data) and `cashflowtest.db` (sample data)
+- **Forecasting Logic**: Intelligent fallback from Prophet AI to simple averaging based on data availability
+- **User Experience**: Prominent database mode indicators prevent accidental data mixing
+- **Navigation**: Added Charts page to main navigation across all templates
+
+### Fixed
+- Unicode character encoding issues in Windows terminal output
+- Chart toolbar styling and functionality
+- Database path consistency across different execution environments
+- Color scheme consistency across all application interfaces
+
+### Technical Improvements
+- Prophet integration with error handling and graceful fallbacks
+- Pandas data processing for time series analysis
+- Plotly.js integration for interactive visualizations
+- Enhanced database configuration system
+- Improved error handling and user feedback
+
+## [1.0.0] - 2025-09-18
 
 ### Added
 - **Advanced Auto-Save Functionality**: Google Sheets-like inline editing experience
@@ -25,15 +69,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project files overview documentation
 - Database storage in Documents folder for persistence
 
-### Planned - AI-Powered Cash Flow Forecasting
-- **Core Vision**: Shift from spending analysis to cash flow prediction
-- **AI Forecasting Engine**: Use historical data to predict future cash flow
-- **Voice Interface**: Speech recognition for natural expense entry
-- **Receipt AI**: Photo capture with automatic data extraction
-- **Smart Alerts**: Proactive notifications for upcoming low balance periods
-- **Conversational Queries**: Voice-activated financial insights
-- **Privacy-First Design**: Manual entry approach for user control
-
 ### Changed
 - **Project Vision**: Evolved from traditional expense tracking to cash flow forecasting PWA
 - **Interface Focus**: Cashflow page as primary interface instead of dashboard
@@ -51,28 +86,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Desktop application functionality
 - Unused template files
 
-## [1.0.0] - 2025-09-18
-
-### Added
-- Complete financial dashboard with monthly summaries
-- Full CRUD operations for cash flow transactions
-- CSV export functionality for financial data
-- Sample data generation for testing
-- Comprehensive project documentation
-
-### Changed
-- Focused application on financial tracking only
-- Database location moved to Documents folder
-- Simplified project structure
-
-### Fixed
-- Database consistency across different execution methods
-- Error handling for empty transaction datasets
-
-### Removed
-- Ideas capture functionality (moved to separate project)
-- Desktop application features
-
 ## [0.1.0] - 2025-07-27
 
 ### Added
@@ -83,35 +96,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTML templates for user interface
 - Project configuration and dependencies
 
-### Changed
-- N/A
-
-### Fixed
-- N/A
-
-### Removed
-- N/A
-
-## Format
-
-### Added
-- New features or functionality
-
-### Changed
-- Changes to existing functionality
-
-### Deprecated
-- Features to be removed in future releases
-
-### Removed
-- Features that have been removed
-
-### Fixed
-- Bug fixes
-
-### Security
-- Security-related fixes
-
-[Unreleased]: https://github.com/SamStamport/MoneyPal/compare/v1.0.0...HEAD
+[2.0.0]: https://github.com/SamStamport/MoneyPal/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/SamStamport/MoneyPal/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/SamStamport/MoneyPal/releases/tag/v0.1.0
