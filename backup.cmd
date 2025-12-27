@@ -22,7 +22,14 @@ if %errorlevel% neq 0 (
 echo    ✓ Changes committed successfully
 
 echo ✅ Step 3/3: Pushing to GitHub...
-git push origin main
+for /f "tokens=*" %%i in ('git branch --show-current') do set BRANCH=%%i
+if "%BRANCH%"=="" (
+    echo ❌ ERROR: Could not detect current branch
+    pause
+    exit /b 1
+)
+echo    Current branch: %BRANCH%
+git push origin %BRANCH%
 if %errorlevel% neq 0 (
     echo ❌ ERROR: Failed to push to GitHub
     pause
