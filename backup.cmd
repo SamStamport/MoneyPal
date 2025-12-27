@@ -14,12 +14,18 @@ echo    ✓ All changes staged successfully
 
 echo ✅ Step 2/3: Committing changes...
 git commit -m "Backup: %date% %time%"
+if %errorlevel% equ 1 (
+    echo    ℹ️ Nothing to commit - working tree clean
+    goto push
+)
 if %errorlevel% neq 0 (
     echo ❌ ERROR: Failed to commit changes
     pause
     exit /b 1
 )
 echo    ✓ Changes committed successfully
+
+:push
 
 echo ✅ Step 3/3: Pushing to GitHub...
 for /f "tokens=*" %%i in ('git branch --show-current') do set BRANCH=%%i
