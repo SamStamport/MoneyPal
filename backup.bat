@@ -14,6 +14,10 @@ echo    ✓ All changes staged successfully
 
 echo ✅ Step 2/3: Committing changes...
 git commit -m "Backup: %date% %time%"
+if %errorlevel% equ 1 (
+    echo    ℹ️ Nothing to commit - working tree clean
+    goto push
+)
 if %errorlevel% neq 0 (
     echo ❌ ERROR: Failed to commit changes
     pause
@@ -21,8 +25,11 @@ if %errorlevel% neq 0 (
 )
 echo    ✓ Changes committed successfully
 
+:push
+
 echo ✅ Step 3/3: Pushing to GitHub...
-git push origin main
+echo    Pushing to master branch...
+git push origin master
 if %errorlevel% neq 0 (
     echo ❌ ERROR: Failed to push to GitHub
     pause
