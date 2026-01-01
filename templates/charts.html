@@ -109,7 +109,7 @@
   <div class="excel-header">
     Cash Flow Analysis & Projections
     <span style="margin: 0 20px; padding: 4px 8px; border-radius: 4px; font-size: 10px; background: {{ 'red' if current_db_mode == 'LIVE' else 'green' }}; color: white;">
-      {{ '🔴 LIVE' if current_db_mode == 'LIVE' else '🟢 SAMPLE' }}
+      {{ '[LIVE]' if current_db_mode == 'LIVE' else '[SAMPLE]' }}
     </span>
     <div class="nav-buttons">
       <button onclick="switchDatabase()" class="nav-btn">Switch DB</button>
@@ -120,7 +120,7 @@
   </div>
 
   <div class="info-box">
-    <h3>📊 About This Chart</h3>
+    <h3>About This Chart</h3>
     <ul>
       <li><strong>Solid lines</strong> show actual historical balance data</li>
       <li><strong>Dashed lines</strong> show projected future balances (next 30 days)</li>

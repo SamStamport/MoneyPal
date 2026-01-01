@@ -179,7 +179,8 @@ def calculate_projection_prophet(entries, account_type, days=30):
         
         # Extract only future predictions (after last historical date)
         last_date = df['ds'].max()
-        future_forecast = forecast[forecast['ds'] > last_date]
+        # Convert last_date to same type as forecast dates for comparison
+        future_forecast = forecast[forecast['ds'] > pd.Timestamp(last_date)]
         
         # Calculate accuracy based on uncertainty intervals
         # Prophet provides yhat_lower and yhat_upper (80% confidence interval)
@@ -208,12 +209,12 @@ def calculate_projection_prophet(entries, account_type, days=30):
         
     except ImportError:
         # Prophet not installed, fall back to simple method
-        print("⚠️  Prophet not installed. Using simple projection method.")
+        print("WARNING: Prophet not installed. Using simple projection method.")
         print("   Install with: pip install prophet")
         return calculate_projection_simple(entries, account_type, days)
     except Exception as e:
         # Any other error, fall back to simple method
-        print(f"⚠️  Prophet error: {e}. Using simple projection method.")
+        print(f"WARNING: Prophet error: {e}. Using simple projection method.")
         return calculate_projection_simple(entries, account_type, days)
 
 
@@ -257,7 +258,14 @@ def calculate_projection_simple(entries, account_type, days=30):
     return projection, accuracy
 
 
-@app.route('/add-ajax', methods=['POST'])
+@app.route('/presets/<account_type>', methods=['GET'])
+def get_presets(account_type):
+    try:
+        with open('presets.json', 'r') as f:
+            presets = json.load(f)
+        return jsonify(presets.get(account_type, []))
+    except:
+        return jsonify([])
 def add_entry_ajax():
     try:
         data = request.get_json()
@@ -266,11 +274,16 @@ def add_entry_ajax():
         if not data.get('date') or not data.get('amount'):
             return jsonify({'error': 'Date and amount are required'}), 400
         
-        # Validate and parse date
+        # Validate and parse date (accept both formats)
         try:
-            date_obj = datetime.strptime(data['date'], "%Y-%m-%d").date()
+            # Try mm/dd/yyyy format first
+            date_obj = datetime.strptime(data['date'], "%m/%d/%Y").date()
         except ValueError:
-            return jsonify({'error': 'Invalid date format'}), 400
+            try:
+                # Fallback to ISO format
+                date_obj = datetime.strptime(data['date'], "%Y-%m-%d").date()
+            except ValueError:
+                return jsonify({'error': 'Invalid date format. Use mm/dd/yyyy'}), 400
         
         # Validate and parse amount
         try:
@@ -298,7 +311,7 @@ def add_entry_ajax():
 
         return jsonify({
             'id': new_entry.id,
-            'date': new_entry.date.strftime("%Y-%m-%d"),
+            'date': new_entry.date.strftime("%m/%d/%Y"),
             'amount': new_entry.amount,
             'description': new_entry.description,
             'notes': new_entry.notes
@@ -317,9 +330,14 @@ def update_entry(entry_id):
 
         if 'date' in data:
             try:
-                entry.date = datetime.strptime(data['date'], "%Y-%m-%d").date()
+                # Try mm/dd/yyyy format first
+                entry.date = datetime.strptime(data['date'], "%m/%d/%Y").date()
             except ValueError:
-                return jsonify({'error': 'Invalid date format'}), 400
+                try:
+                    # Fallback to ISO format
+                    entry.date = datetime.strptime(data['date'], "%Y-%m-%d").date()
+                except ValueError:
+                    return jsonify({'error': 'Invalid date format. Use mm/dd/yyyy'}), 400
                 
         if 'amount' in data:
             try:
@@ -380,7 +398,7 @@ def export_cashflow_csv():
     
     for entry in entries:
         writer.writerow([
-            entry.date.strftime('%Y-%m-%d'),
+            entry.date.strftime('%m/%d/%Y'),
             entry.amount,
             entry.description or '',
             entry.notes or ''
@@ -403,9 +421,9 @@ def export_cashflow_csv():
 if __name__ == '__main__':
     print("\n" + "="*60)
     if current_db_mode == 'LIVE':
-        print("🔴 LIVE DATABASE - REAL DATA")
+        print("[LIVE] DATABASE - REAL DATA")
     else:
-        print("🟢 SAMPLE DATABASE - TEST DATA")
+        print("[SAMPLE] DATABASE - TEST DATA")
     print("MONEYPAL STARTING...")
     print("OPEN http://127.0.0.1:5000/ IN YOUR BROWSER!")
     print("Server running - ready for requests.")

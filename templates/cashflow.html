@@ -101,7 +101,7 @@
   <div class="excel-header">
     Cash Flow Ledger - Bank Account
     <span style="margin: 0 20px; padding: 4px 8px; border-radius: 4px; font-size: 10px; background: {{ 'red' if current_db_mode == 'LIVE' else 'green' }}; color: white;">
-      {{ '🔴 LIVE' if current_db_mode == 'LIVE' else '🟢 SAMPLE' }}
+      {{ '[LIVE]' if current_db_mode == 'LIVE' else '[SAMPLE]' }}
     </span>
     <div class="header-buttons">
       <button onclick="switchDatabase()" class="account-btn">Switch DB</button>
@@ -126,17 +126,22 @@
     <tbody>
 
       <tr id="input-row">
-        <td><input id="input-date" type="date"></td>
+        <td><input id="input-date" type="text" placeholder="mm/dd/yyyy"></td>
         <td><input id="input-amount" type="number" step="0.01" placeholder="0.00"></td>
         <td></td>
-        <td><input id="input-description" placeholder="Description"></td>
+        <td>
+          <input id="input-description" placeholder="Description">
+          <select id="preset-select" onchange="applyPreset()" style="margin-left: 5px; font-size: 10px;">
+            <option value="">Presets</option>
+          </select>
+        </td>
         <td><input id="input-notes" placeholder="Notes"></td>
         <td></td>
       </tr>
 
       {% for item in entries_with_balance %}
       <tr data-id="{{ item.entry.id }}">
-        <td contenteditable="true" data-field="date" data-original="{{ item.entry.date.strftime('%Y-%m-%d') }}">{{ item.entry.date.strftime('%Y-%m-%d') }}</td>
+        <td contenteditable="true" data-field="date" data-original="{{ item.entry.date.strftime('%m/%d/%Y') }}">{{ item.entry.date.strftime('%m/%d/%Y') }}</td>
         <td contenteditable="true" class="number" data-field="amount" data-original="{{ '%.2f'|format(item.entry.amount) }}">{{ "%.2f"|format(item.entry.amount) }}</td>
         <td class="number balance-cell">{{ "%.2f"|format(item.balance) }}</td>
         <td contenteditable="true" data-field="description" data-original="{{ item.entry.description or '' }}">{{ item.entry.description or '' }}</td>
@@ -164,7 +169,36 @@ function switchDatabase() {
   }
 }
 
-document.getElementById('input-date').valueAsDate = new Date();
+// Set today's date in mm/dd/yyyy format
+const today = new Date();
+const todayFormatted = (today.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                      today.getDate().toString().padStart(2, '0') + '/' + 
+                      today.getFullYear();
+document.getElementById('input-date').value = todayFormatted;
+
+// Load presets
+fetch('/presets/bank')
+  .then(response => response.json())
+  .then(presets => {
+    const select = document.getElementById('preset-select');
+    presets.forEach(preset => {
+      const option = document.createElement('option');
+      option.value = JSON.stringify(preset);
+      option.textContent = preset.description;
+      select.appendChild(option);
+    });
+  });
+
+function applyPreset() {
+  const select = document.getElementById('preset-select');
+  if (select.value) {
+    const preset = JSON.parse(select.value);
+    document.getElementById('input-amount').value = preset.amount;
+    document.getElementById('input-description').value = preset.description;
+    document.getElementById('input-notes').value = preset.notes;
+    select.value = '';
+  }
+}
 
 // Add entry on Enter key
 document.getElementById('input-row').addEventListener('keydown', function(e) {
@@ -208,6 +242,13 @@ function addEntry() {
     return;
   }
   
+  // Validate date format (mm/dd/yyyy)
+  const dateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/(19|20)\d{2}$/;
+  if (!dateRegex.test(date)) {
+    alert('Please enter date in mm/dd/yyyy format');
+    return;
+  }
+  
   const data = { date, amount, description, notes, account_type: 'bank' };
   
   document.body.classList.add('loading');
@@ -241,8 +282,17 @@ function saveRow(button) {
   const descCell = row.querySelector('[data-field="description"]');
   const notesCell = row.querySelector('[data-field="notes"]');
   
+  const dateValue = dateCell.textContent.trim();
+  
+  // Validate date format (mm/dd/yyyy)
+  const dateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/(19|20)\d{2}$/;
+  if (!dateRegex.test(dateValue)) {
+    alert('Please enter date in mm/dd/yyyy format');
+    return;
+  }
+  
   const data = {
-    date: dateCell.textContent.trim(),
+    date: dateValue,
     amount: amountCell.textContent.trim(),
     description: descCell.textContent.trim(),
     notes: notesCell.textContent.trim()

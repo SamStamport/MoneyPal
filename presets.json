@@ -1,0 +1,15 @@
+{
+  "bank": [
+    {"description": "Salary", "amount": 3000.00, "notes": "Monthly salary"},
+    {"description": "Rent", "amount": -1200.00, "notes": "Monthly rent payment"},
+    {"description": "Groceries", "amount": -150.00, "notes": "Weekly grocery shopping"},
+    {"description": "Gas", "amount": -60.00, "notes": "Fuel"},
+    {"description": "Utilities", "amount": -200.00, "notes": "Electric, water, internet"}
+  ],
+  "secured_visa": [
+    {"description": "Restaurant", "amount": -45.00, "notes": "Dining out"},
+    {"description": "Online Purchase", "amount": -25.00, "notes": "Amazon/shopping"},
+    {"description": "Payment", "amount": 200.00, "notes": "Credit card payment"},
+    {"description": "Gas Station", "amount": -35.00, "notes": "Fuel purchase"}
+  ]
+}
