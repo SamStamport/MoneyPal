@@ -1,0 +1,25 @@
+﻿repo: C:\Users\samst\VSCodeprojects\MoneyPal
+local_head: f50806856ed1aec97b2c8dd5d2a9527b8d0c19ac
+origin_head: f50806856ed1aec97b2c8dd5d2a9527b8d0c19ac
+status_porcelain: ?? scripts/
+modified_tracked: 
+untracked: scripts/git_backup_check.ps1
+last_commit_files:
+f50806856ed1aec97b2c8dd5d2a9527b8d0c19ac backup
+.gitignore
+QUICK_START.md
+README.md
+app.py
+backup.bat
+backup.cmd
+backup.ps1
+cashflowlive.db
+developer_handbook.md
+presets.json
+requirements.txt
+temp.db
+templates/cashflow.html
+templates/charts.html
+templates/secured_visa.html
+tips.md
+action: committed-and-pushed
