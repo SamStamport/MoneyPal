@@ -64,24 +64,6 @@
       width: 100%;
       height: 600px;
     }
-    .modebar {
-      font-weight: bold !important;
-    }
-    .modebar-btn {
-      font-weight: bold !important;
-    }
-    .js-plotly-plot .plotly .modebar {
-      font-weight: bold !important;
-    }
-    .js-plotly-plot .plotly .modebar-btn {
-      font-weight: bold !important;
-    }
-    .plotly .modebar {
-      font-weight: bold !important;
-    }
-    .plotly .modebar-btn {
-      font-weight: bold !important;
-    }
     .info-box {
       background: #E8F5C4;
       border: 1px solid #9CAF88;
@@ -124,17 +106,28 @@
     <ul>
       <li><strong>Solid lines</strong> show actual historical balance data</li>
       <li><strong>Dashed lines</strong> show projected future balances (next 30 days)</li>
+      <li><strong>Red dotted lines</strong> mark date range boundaries - use date inputs above to adjust what historical data is shown</li>
       <li><strong>Blue</strong> = Bank Account | <strong>Red</strong> = Secured Visa</li>
       <li><strong>Projection Accuracy:</strong> Bank Account: {{ bank_accuracy }}% | Secured Visa: {{ visa_accuracy }}%</li>
-      <li>Projections use Prophet AI to detect patterns in your spending and income cycles</li>
-      <li>Hover over any point to see exact date and balance</li>
-      <li>Click and drag to zoom in on a specific time period</li>
-      <li>Double-click to reset zoom</li>
+      <li>Use date inputs below to adjust historical data range</li>
     </ul>
   </div>
 
   <div class="chart-container">
     <div class="chart-title">Combined Cash Flow with 30-Day Projections</div>
+    <div style="text-align: center; margin-bottom: 15px;">
+      <label style="margin-right: 10px; font-weight: bold;">Historical Data Range:</label>
+      <input type="date" id="start-date" onchange="updateDateRange()" style="padding: 5px; margin-right: 10px;">
+      <span style="margin: 0 5px;">to</span>
+      <input type="date" id="end-date" onchange="updateDateRange()" style="padding: 5px; margin-right: 10px;">
+      <button onclick="resetDateRange()" style="padding: 5px 10px; margin-left: 10px;">Reset Range</button>
+    </div>
+    <div style="text-align: center; margin-bottom: 14px;">
+      <label style="margin-right: 10px; font-weight: bold;">Toggle Series:</label>
+      <button id="btn-bank" class="toggle-btn" onclick="toggleSeries('bank')">Bank Account</button>
+      <button id="btn-visa" class="toggle-btn" onclick="toggleSeries('visa')">Secured Visa</button>
+      <button id="btn-combined" class="toggle-btn" onclick="toggleSeries('combined')">Combined Total</button>
+    </div>
     <div class="chart-description">
       Historical balances and future projections for both accounts
     </div>
@@ -147,135 +140,297 @@
 // Get data from Flask
 const bankData = {{ bank_data | safe }};
 const visaData = {{ visa_data | safe }};
+const combinedData = {{ combined_data | safe }};
 const bankProjection = {{ bank_projection | safe }};
 const visaProjection = {{ visa_projection | safe }};
+const combinedProjection = {{ combined_projection | safe }};
 
-// Prepare traces for Plotly
-const traces = [];
+// Date range controls
+let startDate = null;
+let endDate = null;
 
-// Bank account historical data
-if (bankData.length > 0) {
-  traces.push({
-    x: bankData.map(d => d.date),
-    y: bankData.map(d => d.balance),
-    name: 'Bank Account',
-    type: 'scatter',
-    mode: 'lines',
-    line: {
-      color: '#2196F3',
-      width: 3
-    },
-    hovertemplate: '<b>Bank Account</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
-  });
+// Toggle button state
+const activeSeries = { bank: true, visa: true, combined: true };
+
+// Toggle button styles
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  .toggle-btn { margin: 0 6px; padding: 6px 10px; border-radius: 4px; border: 1px solid #666; background: #fff; cursor: pointer; font-weight: 600; }
+  .toggle-btn.active { background: #4A6741; color: #fff; border-color: #4A6741; }
+`;
+document.head.appendChild(styleSheet);
+
+// Initialize date range
+if (combinedData.length > 0) {
+  startDate = new Date(combinedData[0].date);
+  endDate = new Date(combinedData[combinedData.length - 1].date);
 }
 
-// Bank account projection
-if (bankProjection.length > 0) {
-  // Connect last historical point to first projection point
-  const lastBankBalance = bankData.length > 0 ? bankData[bankData.length - 1].balance : 0;
-  const lastBankDate = bankData.length > 0 ? bankData[bankData.length - 1].date : bankProjection[0].date;
+// Filter data function
+function getFilteredData() {
+  if (!startDate || !endDate) return { bankData, visaData, combinedData };
   
-  traces.push({
-    x: [lastBankDate, ...bankProjection.map(d => d.date)],
-    y: [lastBankBalance, ...bankProjection.map(d => d.balance)],
-    name: 'Bank Projection',
-    type: 'scatter',
-    mode: 'lines',
-    line: {
-      color: '#2196F3',
-      width: 2,
-      dash: 'dash'
-    },
-    hovertemplate: '<b>Bank Projection</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
+  const filteredBank = bankData.filter(d => {
+    const date = new Date(d.date);
+    return date >= startDate && date <= endDate;
   });
-}
-
-// Secured Visa historical data
-if (visaData.length > 0) {
-  traces.push({
-    x: visaData.map(d => d.date),
-    y: visaData.map(d => d.balance),
-    name: 'Secured Visa',
-    type: 'scatter',
-    mode: 'lines',
-    line: {
-      color: '#F44336',
-      width: 3
-    },
-    hovertemplate: '<b>Secured Visa</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
-  });
-}
-
-// Secured Visa projection
-if (visaProjection.length > 0) {
-  const lastVisaBalance = visaData.length > 0 ? visaData[visaData.length - 1].balance : 0;
-  const lastVisaDate = visaData.length > 0 ? visaData[visaData.length - 1].date : visaProjection[0].date;
   
-  traces.push({
-    x: [lastVisaDate, ...visaProjection.map(d => d.date)],
-    y: [lastVisaBalance, ...visaProjection.map(d => d.balance)],
-    name: 'Visa Projection',
-    type: 'scatter',
-    mode: 'lines',
-    line: {
-      color: '#F44336',
-      width: 2,
-      dash: 'dash'
-    },
-    hovertemplate: '<b>Visa Projection</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
+  const filteredVisa = visaData.filter(d => {
+    const date = new Date(d.date);
+    return date >= startDate && date <= endDate;
   });
+  
+  const filteredCombined = combinedData.filter(d => {
+    const date = new Date(d.date);
+    return date >= startDate && date <= endDate;
+  });
+  
+  return { 
+    bankData: filteredBank, 
+    visaData: filteredVisa, 
+    combinedData: filteredCombined 
+  };
 }
 
-// Layout configuration
-const layout = {
-  xaxis: {
-    title: {
-      text: '<b>Date</b>'
-    },
-    gridcolor: '#E0E0E0',
-    showgrid: true
-  },
-  yaxis: {
-    title: {
-      text: '<b>Balance ($)</b>'
-    },
-    gridcolor: '#E0E0E0',
-    showgrid: true,
-    tickformat: '$,.2f',
-    rangemode: 'tozero'
-  },
-  hovermode: 'closest',
-  plot_bgcolor: '#E8F5C4',
-  paper_bgcolor: '#9CAF88',
-  font: {
-    family: 'Segoe UI, Tahoma, sans-serif',
-    size: 14,
-    color: '#000'
-  },
-  legend: {
-    x: 0.01,
-    y: 0.99,
-    bgcolor: 'rgba(232,245,196,0.9)',
-    bordercolor: '#999',
-    borderwidth: 1
-  },
-  margin: {
-    l: 80,
-    r: 40,
-    t: 20,
-    b: 60
+// Create chart
+function createChart() {
+  const { bankData: fBankData, visaData: fVisaData, combinedData: fCombinedData } = getFilteredData();
+  const traces = [];
+
+  // Bank account historical data
+  if (fBankData.length > 0) {
+    traces.push({
+      x: fBankData.map(d => d.date),
+      y: fBankData.map(d => d.balance),
+      name: 'Bank Account',
+      type: 'scatter',
+      mode: 'lines',
+      line: { color: '#2196F3', width: 3 },
+      hovertemplate: '<b>Bank Account</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
+    });
   }
-};
 
-// Configuration
-const config = {
-  responsive: true,
-  displayModeBar: false,
-  displaylogo: false
-};
+  // Bank account projection
+  if (bankProjection.length > 0) {
+    const lastBankBalance = fBankData.length > 0 ? fBankData[fBankData.length - 1].balance : 0;
+    const lastBankDate = fBankData.length > 0 ? fBankData[fBankData.length - 1].date : bankProjection[0].date;
+    
+    traces.push({
+      x: [lastBankDate, ...bankProjection.map(d => d.date)],
+      y: [lastBankBalance, ...bankProjection.map(d => d.balance)],
+      name: 'Bank Projection',
+      type: 'scatter',
+      mode: 'lines',
+      line: { color: '#2196F3', width: 2, dash: 'dash' },
+      hovertemplate: '<b>Bank Projection</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
+    });
+  }
 
-// Create the chart
-Plotly.newPlot('cashflow-chart', traces, layout, config);
+  // Secured Visa historical data
+  if (fVisaData.length > 0) {
+    traces.push({
+      x: fVisaData.map(d => d.date),
+      y: fVisaData.map(d => d.balance),
+      name: 'Secured Visa',
+      type: 'scatter',
+      mode: 'lines',
+      line: { color: '#F44336', width: 3 },
+      hovertemplate: '<b>Secured Visa</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
+    });
+  }
+
+  // Combined total line
+  if (fCombinedData.length > 0) {
+    traces.push({
+      x: fCombinedData.map(d => d.date),
+      y: fCombinedData.map(d => d.balance),
+      name: 'Combined Total',
+      type: 'scatter',
+      mode: 'lines+markers',
+      line: { color: '#4CAF50', width: 3 },
+      marker: { symbol: 'cross', size: 8, color: '#4CAF50' },
+      hovertemplate: '<b>Combined Total</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
+    });
+  }
+
+  // Secured Visa projection
+  if (visaProjection.length > 0) {
+    const lastVisaBalance = fVisaData.length > 0 ? fVisaData[fVisaData.length - 1].balance : 0;
+    const lastVisaDate = fVisaData.length > 0 ? fVisaData[fVisaData.length - 1].date : visaProjection[0].date;
+    
+    traces.push({
+      x: [lastVisaDate, ...visaProjection.map(d => d.date)],
+      y: [lastVisaBalance, ...visaProjection.map(d => d.balance)],
+      name: 'Visa Projection',
+      type: 'scatter',
+      mode: 'lines',
+      line: { color: '#F44336', width: 2, dash: 'dash' },
+      hovertemplate: '<b>Visa Projection</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
+    });
+  }
+
+  // Combined projection
+  if (combinedProjection.length > 0) {
+    const lastCombinedBalance = fCombinedData.length > 0 ? fCombinedData[fCombinedData.length - 1].balance : 0;
+    const lastCombinedDate = fCombinedData.length > 0 ? fCombinedData[fCombinedData.length - 1].date : combinedProjection[0].date;
+    
+    traces.push({
+      x: [lastCombinedDate, ...combinedProjection.map(d => d.date)],
+      y: [lastCombinedBalance, ...combinedProjection.map(d => d.balance)],
+      name: 'Combined Projection',
+      type: 'scatter',
+      mode: 'lines',
+      line: { color: '#4CAF50', width: 2, dash: 'dash' },
+      hovertemplate: '<b>Combined Projection</b><br>Date: %{x}<br>Balance: $%{y:,.2f}<extra></extra>'
+    });
+  }
+
+  // Add vertical lines for date range
+  if (combinedData.length > 0) {
+    // Get actual y-axis range from data
+    const allYValues = [];
+    if (fBankData.length > 0) allYValues.push(...fBankData.map(d => d.balance));
+    if (fVisaData.length > 0) allYValues.push(...fVisaData.map(d => d.balance));
+    if (fCombinedData.length > 0) allYValues.push(...fCombinedData.map(d => d.balance));
+    
+    const minY = Math.min(...allYValues) - 100;
+    const maxY = Math.max(...allYValues) + 100;
+    
+    traces.push({
+      x: [startDate, startDate],
+      y: [minY, maxY],
+      mode: 'lines',
+      line: { color: 'rgba(255, 0, 0, 0.5)', width: 2, dash: 'dot' },
+      name: 'Start Date',
+      showlegend: false,
+      hoverinfo: 'skip'
+    });
+    
+    traces.push({
+      x: [endDate, endDate],
+      y: [minY, maxY],
+      mode: 'lines',
+      line: { color: 'rgba(255, 0, 0, 0.5)', width: 2, dash: 'dot' },
+      name: 'End Date',
+      showlegend: false,
+      hoverinfo: 'skip'
+    });
+  }
+
+  const layout = {
+    xaxis: { title: '<b>Date</b>', gridcolor: '#E0E0E0', showgrid: true },
+    yaxis: { title: '<b>Balance ($)</b>', gridcolor: '#E0E0E0', showgrid: true, tickformat: '$,.2f', rangemode: 'tozero' },
+    hovermode: 'closest',
+    plot_bgcolor: '#E8F5C4',
+    paper_bgcolor: '#9CAF88',
+    font: { family: 'Segoe UI, Tahoma, sans-serif', size: 14, color: '#000' },
+    legend: { x: 0.01, y: 0.99, bgcolor: 'rgba(232,245,196,0.9)', bordercolor: '#999', borderwidth: 1 },
+    margin: { l: 80, r: 40, t: 20, b: 60 }
+  };
+
+  const config = { responsive: true, displayModeBar: true, displaylogo: false };
+  
+  Plotly.newPlot('cashflow-chart', traces, layout, config).then(gd => {
+    // Ensure buttons reflect initial active state
+    updateToggleButtonStyles();
+    // Adjust Y axis to current visible traces
+    updateYAxis();
+  });
+}
+
+// Helper: update toggle button CSS classes
+function updateToggleButtonStyles() {
+  document.getElementById('btn-bank').classList.toggle('active', activeSeries.bank);
+  document.getElementById('btn-visa').classList.toggle('active', activeSeries.visa);
+  document.getElementById('btn-combined').classList.toggle('active', activeSeries.combined);
+}
+
+// Toggle series visibility by key: 'bank' | 'visa' | 'combined'
+function toggleSeries(key) {
+  activeSeries[key] = !activeSeries[key];
+  updateToggleButtonStyles();
+  const gd = document.getElementById('cashflow-chart');
+  if (!gd || !gd.data) return;
+
+  // Determine which trace indices should be toggled
+  const indices = [];
+  gd.data.forEach((trace, i) => {
+    const name = (trace.name || '').toLowerCase();
+    if (name.includes('start date') || name.includes('end date')) return; // ignore vertical markers
+    if (key === 'bank' && name.includes('bank')) indices.push(i);
+    if (key === 'visa' && name.includes('visa')) indices.push(i);
+    if (key === 'combined' && name.includes('combined')) indices.push(i);
+  });
+
+  // Set visibility for those indices
+  if (indices.length > 0) {
+    Plotly.restyle(gd, { visible: activeSeries[key] }, indices).then(() => {
+      // After visibility change, recompute Y axis range
+      updateYAxis();
+    });
+  }
+}
+
+// Recalculate Y axis range based on visible traces
+function updateYAxis() {
+  const gd = document.getElementById('cashflow-chart');
+  if (!gd || !gd.data) return;
+
+  const visibleYs = [];
+  gd.data.forEach(trace => {
+    // trace.visible may be undefined (default = true) or 'legendonly' or false
+    const vis = (trace.visible === undefined) || trace.visible === true || trace.visible === 'true';
+    if (!vis) return;
+    if (!Array.isArray(trace.y)) return;
+    trace.y.forEach(v => {
+      if (typeof v === 'number' && isFinite(v)) visibleYs.push(v);
+    });
+  });
+
+  if (visibleYs.length > 0) {
+    const minY = Math.min(...visibleYs);
+    const maxY = Math.max(...visibleYs);
+    const pad = Math.max(10, (maxY - minY) * 0.12);
+    Plotly.relayout(gd, { 'yaxis.range': [minY - pad, maxY + pad] });
+  } else {
+    // If nothing visible, reset autorange
+    Plotly.relayout(gd, { 'yaxis.autorange': true });
+  }
+}
+
+// Date range functions
+function updateDateInputs() {
+  if (startDate) {
+    document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
+  }
+  if (endDate) {
+    document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
+  }
+}
+
+function updateDateRange() {
+  const startInput = document.getElementById('start-date').value;
+  const endInput = document.getElementById('end-date').value;
+  
+  if (startInput) startDate = new Date(startInput);
+  if (endInput) endDate = new Date(endInput);
+  
+  if (startDate && endDate && startDate > endDate) {
+    [startDate, endDate] = [endDate, startDate];
+    updateDateInputs();
+  }
+  
+  createChart();
+}
+
+function resetDateRange() {
+  if (combinedData.length > 0) {
+    startDate = new Date(combinedData[0].date);
+    endDate = new Date(combinedData[combinedData.length - 1].date);
+    updateDateInputs();
+    createChart();
+  }
+}
 
 function switchDatabase() {
   if (confirm('Switch database? This requires restarting the app.')) {
@@ -286,6 +441,12 @@ function switchDatabase() {
       });
   }
 }
+
+// Initialize
+if (combinedData.length > 0) {
+  updateDateInputs();
+}
+createChart();
 </script>
 
 </body>

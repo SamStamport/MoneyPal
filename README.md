@@ -42,17 +42,17 @@ A Flask-based personal finance PWA focused on **cash flow forecasting** rather t
 ### Advanced Features ✅
 - **Prophet AI Integration**: Advanced time series forecasting with accuracy metrics
 - **Dual Account Support**: Separate tracking for Bank Account and Secured Visa
-- **Visual Database Indicators**: Clear 🔴 LIVE / 🟢 SAMPLE mode display
+- **Visual Database Indicators**: Clear [LIVE] / [SAMPLE] mode display
 - **Responsive Design**: Cohesive color scheme across all interfaces
 - **Error Handling**: Graceful fallback from AI to simple forecasting
 
 ## 🛠️ Technology Stack
 
 - **Backend**: Flask 3.0.0, Python 3.6+
-- **Database**: SQLite with SQLAlchemy ORM
+- **Database**: SQLite with SQLAlchemy 1.4.53
 - **AI/ML**: Prophet for time series forecasting, Pandas for data processing
 - **Frontend**: HTML5, CSS3, JavaScript, Plotly.js for charts
-- **Dependencies**: Flask-SQLAlchemy, python-dotenv, pandas, prophet
+- **Dependencies**: Flask-SQLAlchemy 3.0.5, python-dotenv, pandas, prophet
 
 ## 📁 Project Structure
 
@@ -107,6 +107,7 @@ MoneyPal/
 
 ### Cash Flow Management
 - **Dual Accounts**: Separate Bank Account and Secured Visa tracking
+- **Date Format**: Enter dates in mm/dd/yyyy format
 - **Inline Editing**: Click any cell (date, amount, description, notes) to edit
 - **Auto-Save**: Changes save automatically when you click away
 - **Running Balance**: Real-time balance calculations

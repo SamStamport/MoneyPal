@@ -129,12 +129,7 @@
         <td><input id="input-date" type="text" placeholder="mm/dd/yyyy"></td>
         <td><input id="input-amount" type="number" step="0.01" placeholder="0.00"></td>
         <td></td>
-        <td>
-          <input id="input-description" placeholder="Description">
-          <select id="preset-select" onchange="applyPreset()" style="margin-left: 5px; font-size: 10px;">
-            <option value="">Presets</option>
-          </select>
-        </td>
+        <td><input id="input-description" placeholder="Description"></td>
         <td><input id="input-notes" placeholder="Notes"></td>
         <td></td>
       </tr>
@@ -176,30 +171,6 @@ const todayFormatted = (today.getMonth() + 1).toString().padStart(2, '0') + '/' 
                       today.getFullYear();
 document.getElementById('input-date').value = todayFormatted;
 
-// Load presets
-fetch('/presets/bank')
-  .then(response => response.json())
-  .then(presets => {
-    const select = document.getElementById('preset-select');
-    presets.forEach(preset => {
-      const option = document.createElement('option');
-      option.value = JSON.stringify(preset);
-      option.textContent = preset.description;
-      select.appendChild(option);
-    });
-  });
-
-function applyPreset() {
-  const select = document.getElementById('preset-select');
-  if (select.value) {
-    const preset = JSON.parse(select.value);
-    document.getElementById('input-amount').value = preset.amount;
-    document.getElementById('input-description').value = preset.description;
-    document.getElementById('input-notes').value = preset.notes;
-    select.value = '';
-  }
-}
-
 // Add entry on Enter key
 document.getElementById('input-row').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') {
@@ -232,10 +203,13 @@ document.querySelectorAll('tbody tr:not(#input-row)').forEach(row => {
 });
 
 function addEntry() {
+  console.log('addEntry called'); // Debug line
   const date = document.getElementById('input-date').value;
   const amount = document.getElementById('input-amount').value;
   const description = document.getElementById('input-description').value;
   const notes = document.getElementById('input-notes').value;
+  
+  console.log('Values:', {date, amount, description, notes}); // Debug line
   
   if (!date || !amount) {
     alert('Date and amount are required');

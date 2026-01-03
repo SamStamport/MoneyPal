@@ -17,19 +17,19 @@ Navigate to: **http://127.0.0.1:5000/**
 
 ---
 
-## 🧪 Optional: Add Sample Data
-```bash
-python seed_sample_data.py
-```
-
-## 📁 Database Location
-Data is stored in: `C:\Users\[username]\Documents\MoneyPal\cashflow.db`
+## 🧪 Database Mode Selection
+- First run prompts for LIVE or SAMPLE mode
+- LIVE: Real financial data (cashflowlive.db)
+- SAMPLE: Test data (cashflowtest.db)
+- Switch modes using "Switch DB" button
 
 ## ✨ Key Features to Test
+- **Date Format**: Enter dates as mm/dd/yyyy
+- **Dual Accounts**: Bank Account and Secured Visa tracking
 - **Inline Editing**: Click any cell to edit and auto-save
 - **Add Transactions**: Use the bottom input row + Enter key
+- **AI Charts**: Visit `/charts` for forecasting visualizations
 - **Export Data**: Click "Export CSV" button
-- **Dashboard**: Visit `/dashboard` for financial summaries
 
 ---
 *Ready in under 30 seconds!*

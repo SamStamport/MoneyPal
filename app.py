@@ -98,9 +98,13 @@ def secured_visa():
 def charts():
     """Display interactive charts for cash flow analysis and projections"""
     
-    # Get all entries for both accounts, sorted by date
-    bank_entries = CashFlow.query.filter_by(account_type=ACCOUNT_TYPE_BANK).order_by(CashFlow.date).all()
-    visa_entries = CashFlow.query.filter_by(account_type=ACCOUNT_TYPE_SECURED_VISA).order_by(CashFlow.date).all()
+    # Default to 30 days
+    days = 30
+    cutoff_date = datetime.now().date() - timedelta(days=days)
+    
+    # Get entries for both accounts within the last 30 days
+    bank_entries = CashFlow.query.filter_by(account_type=ACCOUNT_TYPE_BANK).filter(CashFlow.date >= cutoff_date).order_by(CashFlow.date).all()
+    visa_entries = CashFlow.query.filter_by(account_type=ACCOUNT_TYPE_SECURED_VISA).filter(CashFlow.date >= cutoff_date).order_by(CashFlow.date).all()
     
     # Calculate running balances for bank account
     bank_data = []
@@ -126,11 +130,43 @@ def charts():
     bank_projection, bank_accuracy = calculate_projection_prophet(bank_entries, ACCOUNT_TYPE_BANK, days=30)
     visa_projection, visa_accuracy = calculate_projection_prophet(visa_entries, ACCOUNT_TYPE_SECURED_VISA, days=30)
     
+    # Calculate combined total data
+    combined_data = []
+    
+    # Get all entries from both accounts and sort by date
+    all_entries = list(bank_entries) + list(visa_entries)
+    all_entries.sort(key=lambda x: x.date)
+    
+    # Calculate running combined balance
+    running_balance = 0
+    for entry in all_entries:
+        running_balance += entry.amount
+        combined_data.append({
+            'date': entry.date.strftime('%Y-%m-%d'),
+            'balance': round(running_balance, 2)
+        })
+    
+    # Remove duplicates and keep the latest balance for each date
+    combined_dict = {}
+    for item in combined_data:
+        combined_dict[item['date']] = item['balance']
+    
+    combined_data = [{'date': date, 'balance': balance} for date, balance in sorted(combined_dict.items())]
+    
+    # Calculate combined projection
+    combined_projection = []
+    if combined_data:
+        # Use the combined entries to calculate projection
+        all_combined_entries = list(bank_entries) + list(visa_entries)
+        combined_projection, _ = calculate_projection_prophet(all_combined_entries, 'combined', days=30)
+    
     return render_template('charts.html', 
                          bank_data=json.dumps(bank_data),
                          visa_data=json.dumps(visa_data),
+                         combined_data=json.dumps(combined_data),
                          bank_projection=json.dumps(bank_projection),
                          visa_projection=json.dumps(visa_projection),
+                         combined_projection=json.dumps(combined_projection),
                          bank_accuracy=bank_accuracy,
                          visa_accuracy=visa_accuracy,
                          current_db_mode=current_db_mode)
@@ -149,6 +185,11 @@ def calculate_projection_prophet(entries, account_type, days=30):
         # Prepare data for Prophet (needs 'ds' for date and 'y' for value)
         data = []
         running_balance = 0
+        
+        # For combined account, sort all entries by date first
+        if account_type == 'combined':
+            entries = sorted(entries, key=lambda x: x.date)
+        
         for entry in entries:
             running_balance += entry.amount
             data.append({
@@ -223,6 +264,10 @@ def calculate_projection_simple(entries, account_type, days=30):
     if len(entries) < 2:
         return [], 0
     
+    # For combined account, sort all entries by date first
+    if account_type == 'combined':
+        entries = sorted(entries, key=lambda x: x.date)
+    
     # Use last 30 days of data to calculate average daily change
     recent_date = datetime.now().date() - timedelta(days=30)
     recent_entries = [e for e in entries if e.date >= recent_date]
@@ -258,14 +303,85 @@ def calculate_projection_simple(entries, account_type, days=30):
     return projection, accuracy
 
 
-@app.route('/presets/<account_type>', methods=['GET'])
-def get_presets(account_type):
-    try:
-        with open('presets.json', 'r') as f:
-            presets = json.load(f)
-        return jsonify(presets.get(account_type, []))
-    except:
-        return jsonify([])
+@app.route('/charts-data', methods=['GET'])
+def charts_data():
+    """API endpoint for chart data with custom time period"""
+    days = int(request.args.get('days', 30))
+    
+    # Calculate cutoff date for historical data
+    cutoff_date = datetime.now().date() - timedelta(days=days)
+    
+    # Get entries for both accounts within the time period
+    bank_entries = CashFlow.query.filter_by(account_type=ACCOUNT_TYPE_BANK).filter(CashFlow.date >= cutoff_date).order_by(CashFlow.date).all()
+    visa_entries = CashFlow.query.filter_by(account_type=ACCOUNT_TYPE_SECURED_VISA).filter(CashFlow.date >= cutoff_date).order_by(CashFlow.date).all()
+    
+    # Calculate running balances for bank account
+    bank_data = []
+    running_balance = 0
+    for entry in bank_entries:
+        running_balance += entry.amount
+        bank_data.append({
+            'date': entry.date.strftime('%Y-%m-%d'),
+            'balance': round(running_balance, 2)
+        })
+    
+    # Calculate running balances for secured visa
+    visa_data = []
+    running_balance = 0
+    for entry in visa_entries:
+        running_balance += entry.amount
+        visa_data.append({
+            'date': entry.date.strftime('%Y-%m-%d'),
+            'balance': round(running_balance, 2)
+        })
+    
+    # Calculate projections with custom time period
+    bank_projection, bank_accuracy = calculate_projection_prophet(bank_entries, ACCOUNT_TYPE_BANK, days=days)
+    visa_projection, visa_accuracy = calculate_projection_prophet(visa_entries, ACCOUNT_TYPE_SECURED_VISA, days=days)
+    
+    # Calculate combined total data
+    combined_data = []
+    
+    # Get all entries from both accounts and sort by date
+    all_entries = list(bank_entries) + list(visa_entries)
+    all_entries.sort(key=lambda x: x.date)
+    
+    # Calculate running combined balance
+    running_balance = 0
+    for entry in all_entries:
+        running_balance += entry.amount
+        combined_data.append({
+            'date': entry.date.strftime('%Y-%m-%d'),
+            'balance': round(running_balance, 2)
+        })
+    
+    # Remove duplicates and keep the latest balance for each date
+    combined_dict = {}
+    for item in combined_data:
+        combined_dict[item['date']] = item['balance']
+    
+    combined_data = [{'date': date, 'balance': balance} for date, balance in sorted(combined_dict.items())]
+    
+    # Calculate combined projection
+    combined_projection = []
+    if combined_data:
+        # Use the combined entries to calculate projection
+        all_combined_entries = list(bank_entries) + list(visa_entries)
+        combined_projection, _ = calculate_projection_prophet(all_combined_entries, 'combined', days=days)
+    
+    return jsonify({
+        'bank_data': bank_data,
+        'visa_data': visa_data,
+        'combined_data': combined_data,
+        'bank_projection': bank_projection,
+        'visa_projection': visa_projection,
+        'combined_projection': combined_projection,
+        'bank_accuracy': bank_accuracy,
+        'visa_accuracy': visa_accuracy
+    })
+
+
+@app.route('/add-ajax', methods=['POST'])
 def add_entry_ajax():
     try:
         data = request.get_json()

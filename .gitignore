@@ -1,3 +1,25 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite
+*.db
+*.db-journal
+*.sqlite3
+env/
+.env
+.vscode/
+venv/
+build/
+dist/
+*.egg-info/
+coverage/
+*.log
+/.idea/
+*.DS_Store
+node_modules/
+__pycache__/
+*.pytest_cache/
 # Python
 __pycache__/
 *.py[cod]

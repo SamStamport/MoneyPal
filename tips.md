@@ -1,42 +1,49 @@
-# System Monitor Gadget Tips & Tricks
+# MoneyPal Usage Tips & Tricks
 
 ## General Usage
-- The application automatically starts monitoring system resources when launched
-- The window can be moved by clicking and dragging the title bar
-- Right-click the window for additional options
+- Choose LIVE or SAMPLE mode on first run
+- Use SAMPLE mode for testing and experimentation
+- Switch between modes using the "Switch DB" button
 
-## Keyboard Shortcuts
-- `Esc`: Exit the application
-- `Space`: Pause/Resume monitoring
-- `F11`: Toggle fullscreen mode
-- `Ctrl + C`: Copy current metrics to clipboard
+## Data Entry Tips
+- **Date Format**: Always enter dates as mm/dd/yyyy (e.g., 12/25/2024)
+- **Amounts**: Use negative values for expenses, positive for income
+- **Inline Editing**: Click any cell to edit directly in the table
+- **Auto-Save**: Changes save automatically when you click away
+
+## Account Management
+- **Bank Account**: Track checking/savings transactions
+- **Secured Visa**: Track credit card transactions separately
+- **Running Balance**: Automatically calculated for each account
+
+## AI Forecasting
+- **Minimum Data**: Need 10+ transactions for Prophet AI forecasting
+- **Fallback**: Simple averaging used for smaller datasets
+- **Accuracy**: Higher accuracy with more historical data
+- **Charts**: Visit `/charts` for visual forecasting
 
 ## Performance Tips
-- For better performance, minimize the application when not in use
-- Reduce the update interval in settings for lower CPU usage
-- Close unnecessary background applications for more accurate readings
+- Use SAMPLE mode for development and testing
+- Export data regularly using CSV export
+- Keep transaction descriptions consistent for better analysis
 
 ## Troubleshooting
-- If the application freezes, try restarting it
-- Ensure you have the latest version of Python and all dependencies
-- Check the logs in the application directory for error messages
+- **Date Errors**: Ensure mm/dd/yyyy format
+- **Missing Data**: Check database mode (LIVE vs SAMPLE)
+- **Slow Loading**: Large datasets may take time to process
 
-## Development Tips
-- Use virtual environments for dependency management
-- Follow the project's coding standards and guidelines
-- Document any new features or changes thoroughly
+## Keyboard Shortcuts
+- **Enter**: Submit new transaction in input row
+- **Tab**: Navigate between input fields
+- **Escape**: Cancel inline editing
 
-## Recommended Settings
-- Update interval: 1000ms (balance between accuracy and performance)
-- Theme: Dark (reduces eye strain during prolonged use)
-- Window opacity: 0.9 (for better visibility while still seeing through to other windows)
+## Best Practices
+- Enter transactions regularly for accurate forecasting
+- Use descriptive transaction descriptions
+- Review charts page for spending patterns
+- Export data before switching database modes
 
-## Known Issues
-- High CPU usage may cause inaccurate readings
-- Some network interfaces may not report statistics correctly
-- Window position may reset after system sleep/hibernate
-
-## Getting Help
-- Check the project's README.md for documentation
-- Review the project's issue tracker for known problems
-- Submit a new issue if you encounter a bug or have a feature request
+## Data Export
+- CSV files use mm/dd/yyyy date format
+- Separate exports for Bank Account and Secured Visa
+- Includes all transaction details and running balances
