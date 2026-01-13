@@ -1,0 +1,16 @@
+{
+  "snapshot_created_at": "2026-01-10T00:00:00Z",
+  "workspace_root": "c:/Users/samst/VSCodeprojects/MoneyPal",
+  "open_files": [
+    {
+      "path": "app.py",
+      "selection": { "start_line": 3, "end_line": 3 },
+      "note": "Main application file; editor had duplicate tabs open."
+    }
+  ],
+  "git_branch": "master",
+  "notes": [
+    "Lightweight snapshot for resuming work later.",
+    "No unsaved buffer copies were captured — this snapshot references files on disk."
+  ]
+}

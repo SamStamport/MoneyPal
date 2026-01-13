@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-01-10T00:00:00Z",
+  "files": [
+    {
+      "path": "app.py",
+      "selection": {
+        "start_line": 3,
+        "end_line": 3
+      },
+      "note": "Two editor tabs had the same file open; when one closed both closed."
+    }
+  ],
+  "notes": "Lightweight session snapshot. Open `SESSION_README.md` for restore steps."
+}
