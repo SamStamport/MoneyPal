@@ -39,6 +39,8 @@ Navigate to: **http://127.0.0.1:5000/**
 - **Inline Editing**: Click any cell to edit and auto-save
 - **Add Transactions**: Use the bottom input row + Enter key
 - **AI Charts**: Visit `/charts` for forecasting visualizations
+	- Note (2026-01-15): The Charts page now uses a custom horizontal double-thumb slider and mini controls to select the visible date range. Use the slider, date inputs, or the mini-controls (`<<`, `<`, `>`, `>>`).
+	- Tip: Focus a thumb and use Arrow keys / PageUp / PageDown to nudge the window. Dates display as `mm/dd/yyyy` in tooltips.
 - **Export Data**: Click "Export CSV" button
 
 ---

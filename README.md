@@ -197,6 +197,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes and updates.
 
+## Charts UI (2026-01-15)
+
+- Replaced vertical dotted markers with a custom horizontal double-thumb slider and mini controls (`<<`, `<`, `>`, `>>`) for selecting the visible date range on the Charts page.
+- Added a `Lock` button to preserve the selected window across data updates and page reloads.
+- Thumbs are keyboard-accessible: Arrow keys (1 day), PageUp/PageDown (10 days), Home/End, and Enter to apply.
+- Live tooltips and labels show dates while dragging (format: `mm/dd/yyyy`).
+- The selection persists to `localStorage` and is restored on page load; Plotly's built-in rangeslider is hidden and the custom slider synchronizes with date inputs and chart zoom/pan.
+
 ---
 
 **MoneyPal** - Take control of your finances with AI-powered forecasting.

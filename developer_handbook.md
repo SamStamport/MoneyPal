@@ -48,6 +48,14 @@ Note: The application also accepts ISO `YYYY-MM-DD` input; the UI and CSV export
 - `/charts` - AI forecasting charts
 - `/export-csv` - Data export
 
+## Charts UI (2026-01-15)
+
+- The Charts page replaces vertical date markers with a custom horizontal double-thumb slider for selecting the visible date window.
+- Mini controls (`<<`, `<`, `>`, `>>`) allow quick jumps and single-day steps.
+- Thumbs are keyboard-accessible (Arrow keys, PageUp/PageDown, Home/End) and show live `mm/dd/yyyy` tooltips while dragging.
+- A `Lock` button preserves the selected window across data updates; selection is persisted to `localStorage`.
+- Plotly's built-in rangeslider is hidden; the custom controls and the date inputs remain synchronized with chart zoom/pan.
+
 ## Development Workflow
 
 ### Git Commands

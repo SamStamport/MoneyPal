@@ -23,3 +23,7 @@ Notes
 - If you want a fuller session snapshot (open tabs, unsaved changes, breakpoints), say so and I can create a `vscode` workspace file or recommend an extension.
 
 If you'd like, I can also commit these two files to a branch or create a timestamped backup of `app.py` contents — tell me which you prefer.
+
+## Charts UI Note (2026-01-15)
+
+- The Charts page now includes a custom horizontal double-thumb slider with mini-controls and a lock feature for controlling the visible date range. Thumbs support keyboard navigation and show live `mm/dd/yyyy` tooltips while dragging.

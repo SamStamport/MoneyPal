@@ -20,6 +20,8 @@ When you come back, here's a short checklist to pick up where you left off.
   - Ensure `db_preference.txt` contains the mode you want (LIVE or SAMPLE).
   - If working on forecasting, consider installing `prophet` and `pandas` in the venv.
 
+- Quick chart testing note: open `/charts` and verify the custom double-thumb slider, mini-controls, keyboard navigation, and the Lock button. Dates display as `mm/dd/yyyy` and selections persist across reloads.
+
 If you want, I can:
 - Create a `.code-workspace` that reopens `app.py` automatically in split view.
 - Commit the snapshot files to a branch named `session-snapshot/2026-01-10`.

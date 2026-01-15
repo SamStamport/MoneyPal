@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Forecasting Logic**: Intelligent fallback from Prophet AI to simple averaging based on data availability
 - **User Experience**: Prominent database mode indicators prevent accidental data mixing
 - **Navigation**: Added Charts page to main navigation across all templates
+ - **Charts UI**: Replaced vertical dotted date markers with a custom horizontal double-thumb slider and mini controls; added keyboard accessibility, live `mm/dd/yyyy` tooltips, a `Lock` button, and persisted selection in `localStorage` (2026-01-15).
 
 ### Fixed
 - Unicode character encoding issues in Windows terminal output

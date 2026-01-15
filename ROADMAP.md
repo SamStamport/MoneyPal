@@ -28,6 +28,7 @@ MoneyPal aims to be a comprehensive personal finance management tool that helps 
   - Plotly-based interactive charts
   - Combined historical and projected data display
   - Hover tooltips and zoom functionality
+  - Custom horizontal double-thumb slider with mini-controls for date-window selection; keyboard accessible and persisted across sessions (2026-01-15)
   - Cohesive color scheme and styling
 
 - [x] **Advanced User Interface**
