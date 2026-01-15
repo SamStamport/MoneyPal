@@ -177,75 +177,91 @@ def calculate_projection_prophet(entries, account_type, days=30):
     
     # Need at least 10 data points for Prophet
     if len(entries) < 10 or pd is None:
+        # Not enough data or pandas missing — fall back to simple projection
         return calculate_projection_simple(entries, account_type, days)
     
     try:
-        from prophet import Prophet
-        
+        # Prophet import: try modern package name first, then fallback to fbprophet
+        try:
+            from prophet import Prophet
+        except Exception:
+            from fbprophet import Prophet
+
         # Prepare data for Prophet (needs 'ds' for date and 'y' for value)
         data = []
         running_balance = 0
-        
+
         # For combined account, sort all entries by date first
         if account_type == 'combined':
             entries = sorted(entries, key=lambda x: x.date)
-        
+
         for entry in entries:
             running_balance += entry.amount
+            # Ensure ds is a datetime-like value
             data.append({
-                'ds': entry.date,
+                'ds': pd.to_datetime(entry.date),
                 'y': running_balance
             })
-        
+
         df = pd.DataFrame(data)
-        
+
+        # Ensure ds column is datetime
+        df['ds'] = pd.to_datetime(df['ds'])
+
         # Initialize and fit Prophet model
-        # Disable yearly seasonality (not enough data), enable weekly and daily
         model = Prophet(
             daily_seasonality=False,
             weekly_seasonality=True,
             yearly_seasonality=False,
-            changepoint_prior_scale=0.05  # Lower = less flexible, more stable predictions
+            changepoint_prior_scale=0.05
         )
-        
-        # Suppress Prophet's verbose output
+
+        # Suppress Prophet verbose output
         import logging
         logging.getLogger('prophet').setLevel(logging.WARNING)
-        
+
         model.fit(df)
-        
-        # Create future dataframe
-        future = model.make_future_dataframe(periods=days)
+
+        # Create future dataframe (daily frequency)
+        future = model.make_future_dataframe(periods=days, freq='D')
         forecast = model.predict(future)
-        
+
         # Extract only future predictions (after last historical date)
-        last_date = df['ds'].max()
-        # Convert last_date to same type as forecast dates for comparison
-        future_forecast = forecast[forecast['ds'] > pd.Timestamp(last_date)]
-        
-        # Calculate accuracy based on uncertainty intervals
-        # Prophet provides yhat_lower and yhat_upper (80% confidence interval)
-        avg_uncertainty = (future_forecast['yhat_upper'] - future_forecast['yhat_lower']).mean()
-        avg_prediction = future_forecast['yhat'].mean()
-        
-        # Convert uncertainty to accuracy percentage
-        # Lower uncertainty relative to prediction = higher accuracy
+        last_date = pd.to_datetime(df['ds']).max()
+        future_forecast = forecast[forecast['ds'] > last_date]
+
+        if future_forecast.empty:
+            return [], 0
+
+        # Calculate accuracy based on uncertainty intervals (yhat_upper/yhat_lower)
+        try:
+            avg_uncertainty = (future_forecast['yhat_upper'] - future_forecast['yhat_lower']).mean()
+            avg_prediction = future_forecast['yhat'].mean()
+        except Exception:
+            avg_uncertainty = 0
+            avg_prediction = future_forecast['yhat'].mean() if 'yhat' in future_forecast else 0
+
         if avg_prediction != 0:
             uncertainty_ratio = (avg_uncertainty / abs(avg_prediction)) * 100
             accuracy = max(0, min(100, 100 - uncertainty_ratio))
         else:
-            accuracy = 50  # Default if prediction is near zero
-        
+            accuracy = 50
+
         # Format projection data
         projection = []
         for _, row in future_forecast.iterrows():
+            ds_val = row['ds']
+            try:
+                date_str = pd.to_datetime(ds_val).strftime('%Y-%m-%d')
+            except Exception:
+                date_str = str(ds_val)
             projection.append({
-                'date': row['ds'].strftime('%Y-%m-%d'),
-                'balance': round(row['yhat'], 2),
-                'lower': round(row['yhat_lower'], 2),
-                'upper': round(row['yhat_upper'], 2)
+                'date': date_str,
+                'balance': round(float(row.get('yhat', 0)), 2),
+                'lower': round(float(row.get('yhat_lower', 0)) if 'yhat_lower' in row else 0, 2),
+                'upper': round(float(row.get('yhat_upper', 0)) if 'yhat_upper' in row else 0, 2)
             })
-        
+
         return projection, round(accuracy, 1)
         
     except ImportError:
