@@ -12,6 +12,16 @@ pip install -r requirements.txt
 python app.py
 ```
 
+Tip: It's recommended to create and use a virtual environment before installing dependencies:
+
+```powershell
+python -m venv .venv
+# PowerShell (Windows)
+& .\.venv\Scripts\Activate.ps1
+# macOS / Linux
+# source .venv/bin/activate
+```
+
 ### 3. Open in Browser
 Navigate to: **http://127.0.0.1:5000/**
 

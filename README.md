@@ -48,7 +48,7 @@ A Flask-based personal finance PWA focused on **cash flow forecasting** rather t
 
 ## 🛠️ Technology Stack
 
-- **Backend**: Flask 3.0.0, Python 3.6+
+- **Backend**: Flask 3.0.0, Python 3.8+
 - **Database**: SQLite with SQLAlchemy 1.4.53
 - **AI/ML**: Prophet for time series forecasting, Pandas for data processing
 - **Frontend**: HTML5, CSS3, JavaScript, Plotly.js for charts
@@ -76,7 +76,7 @@ MoneyPal/
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.6 or higher
+- Python 3.8 or higher
 - pip package manager
 
 ### Installation
@@ -89,6 +89,13 @@ MoneyPal/
 
 2. **Install dependencies and run**
    ```bash
+   # Create and activate a virtual environment (recommended)
+   python -m venv .venv
+   # PowerShell (Windows)
+   & .\.venv\Scripts\Activate.ps1
+   # macOS / Linux
+   # source .venv/bin/activate
+
    pip install -r requirements.txt
    python app.py
    ```
@@ -112,6 +119,8 @@ MoneyPal/
 - **Auto-Save**: Changes save automatically when you click away
 - **Running Balance**: Real-time balance calculations
 - **Sticky Headers**: Headers remain visible while scrolling through data
+
+Note: The application accepts both `mm/dd/yyyy` (user-friendly) and ISO `YYYY-MM-DD` date formats. When adding or editing via the UI prefer `mm/dd/yyyy` for consistency with CSV export.
 
 ### AI-Powered Forecasting
 - **Charts Page**: Interactive Plotly visualizations

@@ -21,6 +21,8 @@
 - **Fallback**: Simple averaging used for smaller datasets
 - **Accuracy**: Higher accuracy with more historical data
 - **Charts**: Visit `/charts` for visual forecasting
+ 
+Note: The app accepts both `mm/dd/yyyy` and ISO `YYYY-MM-DD` date formats when entering or editing transactions. CSV exports use `mm/dd/yyyy`.
 
 ## Performance Tips
 - Use SAMPLE mode for development and testing

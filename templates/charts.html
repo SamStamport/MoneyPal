@@ -82,6 +82,86 @@
     .info-box li {
       margin: 5px 0;
     }
+    .thumb-tooltip {
+      position: absolute;
+      transform: translate(-50%, -140%);
+      background: #4A6741;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0.95;
+    }
+    .double-range input[type=range]:focus::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(74,103,65,0.12); }
+    /* Custom double-thumb slider styling */
+    .custom-range-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 18px;
+      background: #f3f3f3;
+      border-top: 1px solid #d0d0d0;
+    }
+    .mini-controls { display: flex; gap: 6px; }
+    .mini-controls button {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #999;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .mini-controls button.locked { background:#4A6741; color:#fff; border-color:#3a5331 }
+    .mini-controls button:hover { background: #eee; }
+    .double-range {
+      position: relative;
+      width: 100%;
+      height: 28px;
+      display: flex;
+      align-items: center;
+    }
+    .double-range input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      position: absolute;
+      left: 0; right: 0;
+      margin: 0;
+      pointer-events: auto;
+      height: 28px;
+      background: transparent;
+      z-index: 1;
+    }
+    .double-range input[type=range]::-webkit-slider-runnable-track { height: 8px; background: #ddd; border-radius: 6px; }
+    .double-range input[type=range]::-moz-range-track { height: 8px; background: #ddd; border-radius: 6px; }
+    .double-range input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      pointer-events: auto;
+      width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(#6aa26a,#4A6741); border: 2px solid #e9efe9; margin-top: -5px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .double-range input[type=range]::-moz-range-thumb {
+      pointer-events: auto;
+      width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(#6aa26a,#4A6741); border: 2px solid #e9efe9; box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    /* Highlighted selected range */
+    .range-highlight {
+      position: absolute;
+      height: 8px;
+      background: linear-gradient(90deg,#cfe9d0,#a8d5a1);
+      border-radius: 6px;
+      left: 0; right: 0;
+      pointer-events: none;
+    }
+    .thumb-label {
+      position: absolute;
+      transform: translate(-50%, -220%);
+      font-size: 11px;
+      color: #222;
+      background: transparent;
+      padding: 0 4px;
+      pointer-events: none;
+    }
   </style>
 </head>
 
@@ -106,7 +186,10 @@
     <ul>
       <li><strong>Solid lines</strong> show actual historical balance data</li>
       <li><strong>Dashed lines</strong> show projected future balances (next 30 days)</li>
-      <li><strong>Red dotted lines</strong> mark date range boundaries - use date inputs above to adjust what historical data is shown</li>
+      <li><strong>Date range slider</strong> at the bottom controls the visible date range - use the slider, mini controls, or date inputs to adjust historical data</li>
+      <li><strong>Keyboard:</strong> focus a thumb and use arrow keys to nudge; PageUp/PageDown to jump larger steps</li>
+      <li><strong>Persistence:</strong> the last selected window is remembered between visits</li>
+      <li><strong>Tooltips:</strong> drag a thumb to see exact dates while moving</li>
       <li><strong>Blue</strong> = Bank Account | <strong>Red</strong> = Secured Visa</li>
       <li><strong>Projection Accuracy:</strong> Bank Account: {{ bank_accuracy }}% | Secured Visa: {{ visa_accuracy }}%</li>
       <li>Use date inputs below to adjust historical data range</li>
@@ -132,6 +215,30 @@
       Historical balances and future projections for both accounts
     </div>
     <div id="cashflow-chart"></div>
+
+    <div class="custom-range-container">
+      <div class="mini-controls">
+        <button id="btn-first" title="To start"><<</button>
+        <button id="btn-step-left" title="Step left">&lt;</button>
+        <button id="btn-step-right" title="Step right">&gt;</button>
+        <button id="btn-last" title="To end">>></button>
+        <button id="btn-lock" title="Lock window">Lock</button>
+      </div>
+
+      <div class="double-range" style="flex:1;">
+          <div class="range-highlight" id="range-highlight"></div>
+          <div id="thumb-tooltip-left" class="thumb-tooltip" style="display:none">—</div>
+          <div id="thumb-tooltip-right" class="thumb-tooltip" style="display:none">—</div>
+          <div id="thumb-label-left" class="thumb-label" style="display:none">—</div>
+          <div id="thumb-label-right" class="thumb-label" style="display:none">—</div>
+          <input id="range-left" type="range" min="0" max="100" value="0" tabindex="0">
+          <input id="range-right" type="range" min="0" max="100" value="100" tabindex="0">
+      </div>
+      <div style="width:120px; text-align:right; font-size:12px; color:#333;">
+        <div id="range-label-start">—</div>
+        <div id="range-label-end">—</div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -285,40 +392,26 @@ function createChart() {
     });
   }
 
-  // Add vertical lines for date range
-  if (combinedData.length > 0) {
-    // Get actual y-axis range from data
-    const allYValues = [];
-    if (fBankData.length > 0) allYValues.push(...fBankData.map(d => d.balance));
-    if (fVisaData.length > 0) allYValues.push(...fVisaData.map(d => d.balance));
-    if (fCombinedData.length > 0) allYValues.push(...fCombinedData.map(d => d.balance));
-    
-    const minY = Math.min(...allYValues) - 100;
-    const maxY = Math.max(...allYValues) + 100;
-    
-    traces.push({
-      x: [startDate, startDate],
-      y: [minY, maxY],
-      mode: 'lines',
-      line: { color: 'rgba(255, 0, 0, 0.5)', width: 2, dash: 'dot' },
-      name: 'Start Date',
-      showlegend: false,
-      hoverinfo: 'skip'
-    });
-    
-    traces.push({
-      x: [endDate, endDate],
-      y: [minY, maxY],
-      mode: 'lines',
-      line: { color: 'rgba(255, 0, 0, 0.5)', width: 2, dash: 'dot' },
-      name: 'End Date',
-      showlegend: false,
-      hoverinfo: 'skip'
-    });
+  // Use Plotly's built-in horizontal range slider instead of vertical markers.
+  // The range slider will appear under the x-axis and control the visible date range.
+  // If a date range is set via the inputs, provide it to Plotly so the
+  // rangeslider and x-axis reflect the same window.
+  let xRange = undefined;
+  if (startDate && endDate) {
+    // Use ISO date strings (YYYY-MM-DD) which Plotly understands for date axes
+    xRange = [startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]];
   }
 
   const layout = {
-    xaxis: { title: '<b>Date</b>', gridcolor: '#E0E0E0', showgrid: true },
+    xaxis: { 
+      title: '<b>Date</b>', 
+      gridcolor: '#E0E0E0', 
+      showgrid: true,
+      type: 'date',
+      // Hide Plotly's built-in rangeslider; we'll provide a custom one below.
+      rangeslider: { visible: false },
+      range: xRange
+    },
     yaxis: { title: '<b>Balance ($)</b>', gridcolor: '#E0E0E0', showgrid: true, tickformat: '$,.2f', rangemode: 'tozero' },
     hovermode: 'closest',
     plot_bgcolor: '#E8F5C4',
@@ -330,11 +423,35 @@ function createChart() {
 
   const config = { responsive: true, displayModeBar: true, displaylogo: false };
   
-  Plotly.newPlot('cashflow-chart', traces, layout, config).then(gd => {
+    Plotly.newPlot('cashflow-chart', traces, layout, config).then(gd => {
     // Ensure buttons reflect initial active state
     updateToggleButtonStyles();
     // Adjust Y axis to current visible traces
     updateYAxis();
+
+    // Update our custom slider positions to match startDate/endDate
+    updateCustomRangeControls();
+
+    // If user zooms/pans the chart directly, update the inputs and our custom slider
+    gd.on('plotly_relayout', function(eventdata) {
+      let r0 = null, r1 = null;
+      if (eventdata['xaxis.range[0]'] && eventdata['xaxis.range[1]']) {
+        r0 = eventdata['xaxis.range[0]'];
+        r1 = eventdata['xaxis.range[1]'];
+      } else if (eventdata['xaxis.range']) {
+        const rg = eventdata['xaxis.range'];
+        if (Array.isArray(rg) && rg.length >= 2) {
+          r0 = rg[0]; r1 = rg[1];
+        }
+      }
+
+      if (r0 && r1) {
+        startDate = new Date(r0);
+        endDate = new Date(r1);
+        updateDateInputs();
+        updateCustomRangeControls();
+      }
+    });
   });
 }
 
@@ -444,9 +561,249 @@ function switchDatabase() {
 
 // Initialize
 if (combinedData.length > 0) {
+  // Try to restore saved window; otherwise use full range
+  if (!loadRangeFromStorage()) {
+    startDate = new Date(combinedData[0].date);
+    endDate = new Date(combinedData[combinedData.length - 1].date);
+  }
   updateDateInputs();
 }
 createChart();
+// ensure lock UI reflects loaded state
+if (typeof lockedRange !== 'undefined') {
+  try { const b = document.getElementById('btn-lock'); if (b) { if (lockedRange) b.classList.add('locked'); else b.classList.remove('locked'); b.textContent = lockedRange ? 'Locked' : 'Lock'; } } catch(e){}
+}
+
+// ----- Custom range controls (double-thumb slider + mini buttons) -----
+let customControlsReady = false;
+function setupCustomRangeControls() {
+  if (customControlsReady) return;
+  customControlsReady = true;
+
+  const left = document.getElementById('range-left');
+  const right = document.getElementById('range-right');
+  const lblStart = document.getElementById('range-label-start');
+  const lblEnd = document.getElementById('range-label-end');
+  const highlight = document.getElementById('range-highlight');
+
+  const btnFirst = document.getElementById('btn-first');
+  const btnStepLeft = document.getElementById('btn-step-left');
+  const btnStepRight = document.getElementById('btn-step-right');
+  const btnLast = document.getElementById('btn-last');
+  const btnLock = document.getElementById('btn-lock');
+  const tooltipLeft = document.getElementById('thumb-tooltip-left');
+  const tooltipRight = document.getElementById('thumb-tooltip-right');
+
+  // Helper: clamp and ensure left < right
+  function fixBounds() {
+    let l = parseInt(left.value, 10);
+    let r = parseInt(right.value, 10);
+    if (l >= r) {
+      if (r > 0) l = r - 1; else r = l + 1;
+    }
+    left.value = l;
+    right.value = r;
+  }
+
+  function mmddyyyy(d) {
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
+  }
+
+  function updateHighlight() {
+    const min = parseInt(left.min, 10);
+    const max = parseInt(left.max, 10);
+    const l = parseInt(left.value, 10);
+    const r = parseInt(right.value, 10);
+    const pctL = ((l - min) / (max - min)) * 100;
+    const pctR = ((r - min) / (max - min)) * 100;
+    highlight.style.left = pctL + '%';
+    highlight.style.width = Math.max(2, pctR - pctL) + '%';
+    // position tooltips near thumbs
+    const containerRect = left.parentElement.getBoundingClientRect();
+    const leftPx = containerRect.left + (pctL/100) * containerRect.width;
+    const rightPx = containerRect.left + (pctR/100) * containerRect.width;
+    if (tooltipLeft) tooltipLeft.style.left = pctL + '%';
+    if (tooltipRight) tooltipRight.style.left = pctR + '%';
+    const lblL = document.getElementById('thumb-label-left');
+    const lblR = document.getElementById('thumb-label-right');
+    if (lblL) lblL.style.left = pctL + '%';
+    if (lblR) lblR.style.left = pctR + '%';
+  }
+
+  function updateLabelsAndApply() {
+    const minDate = new Date(combinedData[0].date);
+    const msDay = 24*60*60*1000;
+    const l = parseInt(left.value, 10);
+    const r = parseInt(right.value, 10);
+    const d0 = new Date(minDate.getTime() + l * msDay);
+    const d1 = new Date(minDate.getTime() + r * msDay);
+    startDate = d0;
+    endDate = d1;
+    lblStart.textContent = d0.toISOString().split('T')[0];
+    lblEnd.textContent = d1.toISOString().split('T')[0];
+    updateDateInputs();
+    saveRangeToStorage();
+    // if lockedRange set, also save lock state
+    try { localStorage.setItem('moneypal_charts_locked', lockedRange ? '1' : '0'); } catch (e) {}
+    createChart();
+  }
+
+  left.addEventListener('input', function(e) {
+    left.style.zIndex = 3;
+    right.style.zIndex = 1;
+    fixBounds();
+    updateHighlight();
+    // show/update tooltip
+    const minDate = new Date(combinedData[0].date);
+    const msDay = 24*60*60*1000;
+    const d = new Date(minDate.getTime() + parseInt(left.value,10)*msDay);
+    if (tooltipLeft) { tooltipLeft.style.display = 'block'; tooltipLeft.textContent = mmddyyyy(d); }
+    const lblL = document.getElementById('thumb-label-left'); if (lblL) { lblL.style.display='block'; lblL.textContent = mmddyyyy(d); }
+  });
+  left.addEventListener('change', function() { fixBounds(); updateLabelsAndApply(); if (tooltipLeft) tooltipLeft.style.display='none'; });
+
+  right.addEventListener('input', function(e) { right.style.zIndex = 3; left.style.zIndex = 1; fixBounds(); updateHighlight(); if (tooltipRight) { const minDate = new Date(combinedData[0].date); const msDay=24*60*60*1000; const d=new Date(minDate.getTime()+parseInt(right.value,10)*msDay); tooltipRight.style.display='block'; tooltipRight.textContent = mmddyyyy(d); const lblR = document.getElementById('thumb-label-right'); if (lblR) { lblR.style.display='block'; lblR.textContent = mmddyyyy(d); } } });
+  right.addEventListener('change', function() { fixBounds(); updateLabelsAndApply(); if (tooltipRight) tooltipRight.style.display='none'; const lblR = document.getElementById('thumb-label-right'); if (lblR) lblR.style.display='none'; });
+
+  // Keyboard accessibility for thumbs
+  left.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); left.value = Math.max(parseInt(left.min,10), parseInt(left.value,10)-1); left.dispatchEvent(new Event('input')); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); left.value = Math.min(parseInt(left.max,10)-1, parseInt(left.value,10)+1); left.dispatchEvent(new Event('input')); }
+    if (e.key === 'PageDown') { e.preventDefault(); left.value = Math.max(parseInt(left.min,10), parseInt(left.value,10)-10); left.dispatchEvent(new Event('input')); }
+    if (e.key === 'PageUp') { e.preventDefault(); left.value = Math.min(parseInt(left.max,10)-1, parseInt(left.value,10)+10); left.dispatchEvent(new Event('input')); }
+    if (e.key === 'Home') { e.preventDefault(); left.value = parseInt(left.min,10); left.dispatchEvent(new Event('input')); }
+    if (e.key === 'End') { e.preventDefault(); left.value = Math.max(0, parseInt(right.value,10)-1); left.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter') { left.dispatchEvent(new Event('change')); }
+  });
+  right.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); right.value = Math.max(parseInt(right.min,10), parseInt(right.value,10)-1); right.dispatchEvent(new Event('input')); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); right.value = Math.min(parseInt(right.max,10), parseInt(right.value,10)+1); right.dispatchEvent(new Event('input')); }
+    if (e.key === 'PageDown') { e.preventDefault(); right.value = Math.max(parseInt(right.min,10), parseInt(right.value,10)-10); right.dispatchEvent(new Event('input')); }
+    if (e.key === 'PageUp') { e.preventDefault(); right.value = Math.min(parseInt(right.max,10), parseInt(right.value,10)+10); right.dispatchEvent(new Event('input')); }
+    if (e.key === 'Home') { e.preventDefault(); right.value = Math.min(parseInt(right.max,10), parseInt(left.value,10)+1); right.dispatchEvent(new Event('input')); }
+    if (e.key === 'End') { e.preventDefault(); right.value = parseInt(right.max,10); right.dispatchEvent(new Event('input')); }
+    if (e.key === 'Enter') { right.dispatchEvent(new Event('change')); }
+  });
+
+  btnFirst.addEventListener('click', function() {
+    const span = parseInt(right.value,10) - parseInt(left.value,10);
+    left.value = 0;
+    right.value = Math.min(parseInt(left.max,10), span);
+    updateHighlight();
+    updateLabelsAndApply();
+  });
+  btnLast.addEventListener('click', function() {
+    const span = parseInt(right.value,10) - parseInt(left.value,10);
+    right.value = parseInt(left.max,10);
+    left.value = Math.max(0, parseInt(right.value,10) - span);
+    updateHighlight();
+    updateLabelsAndApply();
+  });
+  btnStepLeft.addEventListener('click', function() {
+    const l = Math.max(0, parseInt(left.value,10) - 1);
+    const r = Math.max(l+1, parseInt(right.value,10) - 1);
+    left.value = l; right.value = r; updateHighlight(); updateLabelsAndApply();
+  });
+  btnStepRight.addEventListener('click', function() {
+    const max = parseInt(left.max,10);
+    const r = Math.min(max, parseInt(right.value,10) + 1);
+    const l = Math.min(r-1, parseInt(left.value,10) + 1);
+    left.value = l; right.value = r; updateHighlight(); updateLabelsAndApply();
+  });
+  
+  // Lock button toggles preservation of the current window when new data arrives
+  let lockedRange = false;
+  function updateLockUI() {
+    if (!btnLock) return;
+    if (lockedRange) btnLock.classList.add('locked'); else btnLock.classList.remove('locked');
+    btnLock.textContent = lockedRange ? 'Locked' : 'Lock';
+  }
+  function saveLockToStorage() {
+    try { localStorage.setItem('moneypal_charts_locked', lockedRange ? '1' : '0'); } catch (e) {}
+  }
+  function loadLockFromStorage() {
+    try { const v = localStorage.getItem('moneypal_charts_locked'); lockedRange = v === '1'; } catch (e) { lockedRange = false; }
+  }
+  if (btnLock) {
+    loadLockFromStorage(); updateLockUI();
+    btnLock.addEventListener('click', function() { lockedRange = !lockedRange; updateLockUI(); saveLockToStorage(); });
+  }
+}
+
+function updateCustomRangeControls() {
+  // Ensure controls exist and combinedData available
+  if (!combinedData || combinedData.length === 0) return;
+  setupCustomRangeControls();
+  const left = document.getElementById('range-left');
+  const right = document.getElementById('range-right');
+  const lblStart = document.getElementById('range-label-start');
+  const lblEnd = document.getElementById('range-label-end');
+  const highlight = document.getElementById('range-highlight');
+
+  const minDate = new Date(combinedData[0].date);
+  const maxDate = new Date(combinedData[combinedData.length-1].date);
+  const msDay = 24*60*60*1000;
+  const totalDays = Math.round((Date.UTC(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate()) - Date.UTC(minDate.getFullYear(), minDate.getMonth(), minDate.getDate()))/msDay);
+
+  left.min = 0; left.max = totalDays;
+  right.min = 0; right.max = totalDays;
+
+  // default to full range if startDate/endDate not set
+  if (!startDate || !endDate) {
+    left.value = 0;
+    right.value = totalDays;
+    lblStart.textContent = minDate.toISOString().split('T')[0];
+    lblEnd.textContent = maxDate.toISOString().split('T')[0];
+  } else {
+    const l = Math.round((Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()) - Date.UTC(minDate.getFullYear(), minDate.getMonth(), minDate.getDate()))/msDay);
+    const r = Math.round((Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()) - Date.UTC(minDate.getFullYear(), minDate.getMonth(), minDate.getDate()))/msDay);
+    left.value = Math.max(0, Math.min(totalDays, l));
+    right.value = Math.max(0, Math.min(totalDays, r));
+    lblStart.textContent = new Date(minDate.getTime() + left.value * msDay).toISOString().split('T')[0];
+    lblEnd.textContent = new Date(minDate.getTime() + right.value * msDay).toISOString().split('T')[0];
+  }
+
+  // update highlight bar
+  const pctL = ((left.value - left.min)/(left.max - left.min))*100;
+  const pctR = ((right.value - left.min)/(left.max - left.min))*100;
+  highlight.style.left = pctL + '%';
+  highlight.style.width = Math.max(2, pctR - pctL) + '%';
+}
+
+// Persistence: save & load last chosen window
+function saveRangeToStorage() {
+  try {
+    const key = 'moneypal_charts_range';
+    const payload = { start: startDate ? startDate.toISOString().split('T')[0] : null, end: endDate ? endDate.toISOString().split('T')[0] : null };
+    localStorage.setItem(key, JSON.stringify(payload));
+    // also persist lock state if present
+    try { localStorage.setItem('moneypal_charts_locked', lockedRange ? '1' : '0'); } catch (e) {}
+  } catch (e) { /* ignore */ }
+}
+
+function loadRangeFromStorage() {
+  try {
+    const key = 'moneypal_charts_range';
+    const raw = localStorage.getItem(key);
+    if (!raw) return false;
+    const obj = JSON.parse(raw);
+    if (!obj || !obj.start || !obj.end) return false;
+    const minDate = new Date(combinedData[0].date);
+    const maxDate = new Date(combinedData[combinedData.length-1].date);
+    const s = new Date(obj.start);
+    const e = new Date(obj.end);
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return false;
+    if (s < minDate) s.setTime(minDate.getTime());
+    if (e > maxDate) e.setTime(maxDate.getTime());
+    startDate = s; endDate = e;
+    // load locked state too
+    try { const v = localStorage.getItem('moneypal_charts_locked'); lockedRange = v === '1'; } catch (e) { lockedRange = false; }
+    return true;
+  } catch (e) { return false; }
+}
 </script>
 
 </body>
