@@ -245,6 +245,8 @@
 
 <script>
 // Get data from Flask
+// Global lock state for custom range controls (shared across functions)
+let lockedRange = false;
 const bankData = {{ bank_data | safe }};
 const visaData = {{ visa_data | safe }};
 const combinedData = {{ combined_data | safe }};
@@ -715,7 +717,7 @@ function setupCustomRangeControls() {
   });
   
   // Lock button toggles preservation of the current window when new data arrives
-  let lockedRange = false;
+  // (uses global `lockedRange` declared at top of the script)
   function updateLockUI() {
     if (!btnLock) return;
     if (lockedRange) btnLock.classList.add('locked'); else btnLock.classList.remove('locked');
